@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>KsUnited ⚡ Kent State University</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Lora:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold:    #EAB020;
+      --gold-lt: #F5C842;
+      --gold-dk: #7a5c10;
+      --navy:    #002664;
+      --r:       8px;
+    }
+    [data-theme="dark"] {
+      --bg:    #07101e;
+      --bg2:   rgba(7,16,30,.92);
+      --card:  rgba(10,20,40,.76);
+      --bdr:   rgba(234,176,32,.13);
+      --txt:   #eef2f8;
+      --txt2:  rgba(238,242,248,.6);
+      --txt3:  rgba(238,242,248,.32);
+      --ibg:   rgba(255,255,255,.05);
+      --sh:    0 8px 32px rgba(0,0,0,.45);
+    }
+    [data-theme="light"] {
+      --bg:    #f0ece0;
+      --bg2:   rgba(240,236,224,.95);
+      --card:  rgba(255,252,245,.92);
+      --bdr:   rgba(0,38,100,.13);
+      --txt:   #0a1020;
+      --txt2:  rgba(10,16,32,.58);
+      --txt3:  rgba(10,16,32,.3);
+      --ibg:   rgba(0,0,0,.04);
+      --sh:    0 8px 32px rgba(0,0,0,.1);
+    }
+
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden;transition:background .3s,color .3s}
+
+    /* ── BACKGROUND — your KSU arch photo ── */
+    .bg{
+      position:fixed;inset:0;z-index:0;
+      background-image:url('/static/campus.jpg');
+      background-size:cover;
+      background-position:center 30%;
+    }
+    [data-theme="dark"]  .bg{filter:brightness(.22) saturate(.75)}
+    [data-theme="light"] .bg{filter:brightness(.92) saturate(.5);opacity:.18}
+
+    .bg-ov{position:fixed;inset:0;z-index:1;
+      background:radial-gradient(ellipse 100% 55% at 50% 0%,rgba(0,38,100,.5) 0%,transparent 68%);
+      pointer-events:none}
+    [data-theme="light"] .bg-ov{opacity:0}
+
+    .top-line{position:fixed;top:0;left:0;right:0;height:2px;z-index:200;
+      background:linear-gradient(90deg,transparent,var(--navy),var(--gold),var(--navy),transparent)}
+
+    /* ── MASTHEAD ── */
+    .mast{position:relative;z-index:100;background:var(--bg2);backdrop-filter:blur(20px);border-bottom:1px solid var(--bdr);padding:0 1.5rem;margin-top:2px}
+
+    .mast-top{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:.3rem 0;border-bottom:1px solid var(--bdr);
+      font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--txt3);letter-spacing:.1em
+    }
+    .mast-top-r{display:flex;align-items:center;gap:.65rem}
+    /* flash points — no animation, just static */
+    .fp-chip{
+      display:flex;align-items:center;gap:.26rem;
+      background:rgba(234,176,32,.1);border:1px solid rgba(234,176,32,.22);
+      border-radius:20px;padding:.17rem .52rem;
+      font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--gold)
+    }
+    .theme-btn{background:none;border:none;cursor:pointer;font-size:.8rem;color:var(--txt2);padding:.15rem .35rem;border-radius:4px;transition:color .12s}
+    .theme-btn:hover{color:var(--gold)}
+
+    /* brand row */
+    .mast-main{display:flex;align-items:center;justify-content:space-between;padding:.68rem 0;gap:1rem}
+    .brand{display:flex;flex-direction:column;gap:.16rem}
+
+    /* KsUnited ⚡ — flash sign as text, no animation */
+    .brand-name{
+      font-family:'Playfair Display',serif;
+      font-size:2.1rem;font-weight:900;line-height:1;letter-spacing:-.02em;
+      display:flex;align-items:center;gap:.25rem
+    }
+    .brand-name .ks{color:var(--txt)}
+    .brand-name .united{color:var(--gold)}
+    .brand-flash{
+      font-size:1.6rem;color:var(--gold);
+      font-family:'Inter',sans-serif;font-weight:700;
+      /* NO animation — static flash sign */
+    }
+    .brand-ksu{font-family:'Lora',serif;font-size:.78rem;font-style:italic;color:var(--txt2);letter-spacing:.04em}
+    .brand-sub{font-family:'JetBrains Mono',monospace;font-size:.54rem;color:var(--txt3);letter-spacing:.16em;text-transform:uppercase}
+
+    /* search */
+    .srch-wrap{flex:1;max-width:380px;position:relative}
+    .srch{width:100%;background:var(--ibg);border:1px solid var(--bdr);border-radius:20px;color:var(--txt);font-family:'Inter',sans-serif;font-size:.83rem;padding:.47rem 1rem .47rem 2.25rem;outline:none;transition:border-color .12s,box-shadow .12s}
+    .srch:focus{border-color:rgba(234,176,32,.4);box-shadow:0 0 0 3px rgba(234,176,32,.08)}
+    .srch::placeholder{color:var(--txt3)}
+    .srch-ic{position:absolute;left:.76rem;top:50%;transform:translateY(-50%);color:var(--txt3);width:13px;height:13px;pointer-events:none}
+
+    /* buttons */
+    .mast-r{display:flex;align-items:center;gap:.4rem;flex-shrink:0}
+    .uchip{font-family:'JetBrains Mono',monospace;font-size:.66rem;color:var(--txt2)}
+    .uchip .un{color:var(--gold)}
+    .btn{font-family:'Inter',sans-serif;font-size:.78rem;font-weight:600;border-radius:var(--r);padding:.38rem .86rem;cursor:pointer;border:none;transition:all .15s}
+    .btn-gh{background:transparent;color:var(--txt2);border:1px solid var(--bdr)}
+    .btn-gh:hover{color:var(--txt);border-color:var(--txt3)}
+    .btn-nv{background:rgba(0,38,100,.5);color:var(--txt);border:1px solid rgba(0,53,160,.4)}
+    .btn-nv:hover{background:rgba(0,53,160,.65)}
+    .btn-gd{background:var(--gold);color:#07101e;font-weight:700}
+    .btn-gd:hover{background:var(--gold-lt);transform:translateY(-1px);box-shadow:0 4px 14px rgba(234,176,32,.3)}
+
+    /* ── SECTION NAV ── */
+    .snav{position:sticky;top:0;z-index:90;background:var(--bg2);backdrop-filter:blur(16px);border-bottom:1px solid var(--bdr);display:flex;align-items:center;overflow-x:auto;scrollbar-width:none}
+    .snav::-webkit-scrollbar{display:none}
+    .sb{font-family:'Inter',sans-serif;font-size:.74rem;font-weight:500;background:none;border:none;color:var(--txt2);padding:.55rem .92rem;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all .12s;flex-shrink:0}
+    .sb:hover{color:var(--txt)}
+    .sb.on{color:var(--gold);border-bottom-color:var(--gold)}
+    .nav-end{margin-left:auto;display:flex;align-items:center;gap:.3rem;padding:0 .88rem;flex-shrink:0}
+    .spill{font-family:'JetBrains Mono',monospace;font-size:.62rem;background:none;border:1px solid transparent;color:var(--txt3);padding:.17rem .48rem;border-radius:20px;cursor:pointer;transition:all .12s}
+    .spill.on,.spill:hover{border-color:rgba(234,176,32,.3);color:var(--gold)}
+
+    /* ── LAYOUT ── */
+    .layout{position:relative;z-index:5;display:grid;grid-template-columns:1fr 282px;max-width:1280px;margin:0 auto;min-height:calc(100vh - 128px)}
+
+    /* ── FEED ── */
+    .feed-col{padding:1.3rem 1.65rem;border-right:1px solid var(--bdr)}
+
+    /* ── POST CARD ── */
+    .post-card{background:var(--card);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--bdr);border-radius:var(--r);padding:.86rem 1.1rem;margin-bottom:.5rem;transition:border-color .15s,transform .15s,box-shadow .15s;position:relative;overflow:hidden}
+    .post-card:hover{border-color:rgba(234,176,32,.3);transform:translateY(-1px);box-shadow:var(--sh)}
+    .post-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:transparent;transition:background .15s}
+    .post-card:hover::after{background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+
+    .ptop{display:flex;align-items:center;gap:.4rem;margin-bottom:.46rem;flex-wrap:wrap}
+    .flair{font-family:'JetBrains Mono',monospace;font-size:.6rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:.13rem .46rem;border-radius:3px}
+    .fl-ac{background:rgba(0,38,100,.45);color:#8bbcff;border:1px solid rgba(0,38,100,.7)}
+    .fl-ad{background:rgba(0,38,100,.3);color:#6699dd;border:1px solid rgba(0,38,100,.5)}
+    .fl-di{background:rgba(234,176,32,.1);color:var(--gold);border:1px solid rgba(234,176,32,.22)}
+    .fl-ho{background:rgba(39,180,100,.09);color:#6dcc96;border:1px solid rgba(39,180,100,.18)}
+    .fl-he{background:rgba(220,60,60,.09);color:#f08888;border:1px solid rgba(220,60,60,.18)}
+    .fl-te{background:rgba(100,80,220,.09);color:#b8a8f0;border:1px solid rgba(100,80,220,.18)}
+    .fl-ev{background:rgba(40,160,220,.09);color:#70c8f0;border:1px solid rgba(40,160,220,.18)}
+    .fl-ra{background:rgba(220,60,60,.14);color:#e87070;border:1px solid rgba(220,60,60,.28)}
+    .fl-fr{background:rgba(60,180,120,.09);color:#80d8a8;border:1px solid rgba(60,180,120,.18)}
+    .fl-xx{background:var(--ibg);color:var(--txt3);border:1px solid var(--bdr)}
+
+    .pmeta{font-family:'JetBrains Mono',monospace;font-size:.63rem;color:var(--txt3)}
+    .pmeta strong{color:var(--txt2)}
+    .ptime{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--txt3);margin-left:auto}
+    .pbody{font-family:'Lora',serif;font-size:.93rem;font-weight:400;line-height:1.68;color:var(--txt);margin-bottom:.6rem}
+
+    .ibox{border-left:2px solid var(--gold);background:rgba(234,176,32,.05);padding:.46rem .7rem;margin-bottom:.5rem;border-radius:0 var(--r) var(--r) 0;display:none}
+    .ibox.show{display:block}
+    .ibox.green{border-left-color:#27c97a;background:rgba(39,201,122,.05)}
+    .ilbl{font-family:'JetBrains Mono',monospace;font-size:.57rem;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:2px}
+    .ibox.green .ilbl{color:#27c97a}
+    .itxt{font-family:'Lora',serif;font-size:.82rem;line-height:1.5;color:var(--txt2);font-style:italic}
+
+    .pacts{display:flex;align-items:center;gap:.4rem;padding-top:.5rem;border-top:1px solid var(--bdr)}
+    .act{font-family:'JetBrains Mono',monospace;font-size:.65rem;background:none;border:none;color:var(--txt3);cursor:pointer;display:flex;align-items:center;gap:.25rem;padding:.2rem .4rem;border-radius:4px;transition:all .12s}
+    .act:hover{color:var(--txt);background:var(--ibg)}
+    .act.upvoted{color:var(--gold)}
+    .act svg{width:12px;height:12px}
+    .uvn{font-family:'Inter',sans-serif;font-size:.82rem;font-weight:700}
+
+    /* ── REPLY THREAD with Reddit-style connecting lines ── */
+    .thread{display:none;margin-top:.65rem;padding-top:.6rem;border-top:1px solid var(--bdr)}
+    .thread.open{display:block}
+    .rw{position:relative;padding-left:18px}
+    .rw::before{content:'';position:absolute;left:7px;top:0;bottom:14px;width:1px;background:rgba(234,176,32,.18)}
+    .r-item{position:relative;margin-bottom:.42rem;padding:.46rem .65rem;background:var(--ibg);border-radius:0 var(--r) var(--r) 0;border:1px solid var(--bdr);border-left:none}
+    .r-item::before{content:'';position:absolute;left:-11px;top:14px;width:11px;height:1px;background:rgba(234,176,32,.18)}
+    .r-item.air{background:rgba(234,176,32,.05);border-color:rgba(234,176,32,.14)}
+    .r-top{display:flex;align-items:center;gap:.38rem;margin-bottom:3px}
+    .r-av{width:19px;height:19px;border-radius:50%;background:rgba(0,38,100,.45);border:1px solid var(--bdr);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:.54rem;color:var(--txt3);flex-shrink:0}
+    .air .r-av{background:rgba(234,176,32,.15);color:var(--gold)}
+    .r-name{font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--txt2)}
+    .r-name strong{color:var(--txt)}
+    .r-time{font-family:'JetBrains Mono',monospace;font-size:.57rem;color:var(--txt3);margin-left:auto}
+    .r-txt{font-family:'Lora',serif;font-size:.83rem;line-height:1.52;color:var(--txt)}
+    .mention{color:var(--gold);font-weight:600}
+    .r-irow{display:flex;gap:.36rem;margin-top:.58rem}
+    .r-inp{flex:1;background:var(--ibg);border:1px solid var(--bdr);border-radius:var(--r);color:var(--txt);font-family:'Lora',serif;font-size:.82rem;padding:.38rem .65rem;outline:none;transition:border-color .12s}
+    .r-inp:focus{border-color:rgba(234,176,32,.35)}
+    .r-inp::placeholder{color:var(--txt3)}
+
+    /* ── ASIDE ── */
+    .aside-col{padding:1.3rem .92rem;display:flex;flex-direction:column;gap:.82rem}
+    .panel{background:var(--card);backdrop-filter:blur(18px);border:1px solid var(--bdr);border-radius:var(--r);overflow:hidden}
+    .ph{display:flex;align-items:center;gap:.46rem;padding:.56rem .86rem;background:rgba(0,38,100,.14);border-bottom:1px solid var(--bdr)}
+    .porb{width:22px;height:22px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;font-size:.62rem;font-weight:700;color:#07101e;flex-shrink:0;box-shadow:0 0 7px rgba(234,176,32,.28)}
+    .ptitle{font-family:'Inter',sans-serif;font-size:.78rem;font-weight:600;flex:1;color:var(--txt)}
+    .pbadge{font-family:'JetBrains Mono',monospace;font-size:.5rem;background:rgba(234,176,32,.1);border:1px solid rgba(234,176,32,.2);color:var(--gold);border-radius:3px;padding:.06rem .32rem}
+
+    /* AI */
+    .ai-fd{padding:.6rem;min-height:140px;max-height:255px;overflow-y:auto;display:flex;flex-direction:column;gap:.36rem}
+    .ai-fd::-webkit-scrollbar{width:2px}
+    .ai-fd::-webkit-scrollbar-thumb{background:rgba(234,176,32,.18)}
+    .aib{font-size:.76rem;line-height:1.55;padding:.4rem .6rem;border-radius:6px}
+    .aib.sys{background:rgba(234,176,32,.06);border:1px solid rgba(234,176,32,.1);color:var(--txt2);font-style:italic;font-family:'Lora',serif;font-size:.72rem}
+    .aib.usr{background:rgba(0,38,100,.4);border:1px solid rgba(0,53,160,.3);color:var(--txt);align-self:flex-end;max-width:92%}
+    .aib.bot{background:rgba(234,176,32,.05);border:1px solid rgba(234,176,32,.1);color:var(--txt);font-family:'Lora',serif}
+    .dots{display:flex;gap:3px;align-items:center;padding:.4rem .6rem}
+    .dots span{width:4px;height:4px;border-radius:50%;background:var(--gold);animation:dt 1.2s infinite}
+    .dots span:nth-child(2){animation-delay:.2s}
+    .dots span:nth-child(3){animation-delay:.4s}
+    @keyframes dt{0%,80%,100%{opacity:.3;transform:scale(.8)}40%{opacity:1;transform:scale(1.3)}}
+    .ai-bar{display:flex;gap:.3rem;padding:.46rem .6rem;border-top:1px solid var(--bdr)}
+    .ai-in{flex:1;background:var(--ibg);border:1px solid var(--bdr);border-radius:var(--r);color:var(--txt);font-family:'Inter',sans-serif;font-size:.77rem;padding:.35rem .58rem;outline:none;transition:border-color .12s}
+    .ai-in:focus{border-color:rgba(234,176,32,.35)}
+    .ai-in::placeholder{color:var(--txt3)}
+    .ai-go{width:24px;height:24px;border-radius:4px;background:var(--gold);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#07101e;flex-shrink:0;transition:all .12s}
+    .ai-go:hover{background:var(--gold-lt);transform:scale(1.06)}
+    .ai-go svg{width:10px;height:10px}
+    .powered{font-family:'JetBrains Mono',monospace;font-size:.52rem;color:var(--txt3);letter-spacing:.1em;text-align:center;padding:.26rem;border-top:1px solid var(--bdr)}
+    .powered span{color:var(--gold)}
+
+    /* Flash Points Leaderboard */
+    .lb-body{padding:.42rem .76rem .76rem}
+    .lbi{display:flex;align-items:center;gap:.5rem;padding:.38rem 0;border-bottom:1px solid var(--bdr)}
+    .lbi:last-child{border:none}
+    .lbr{font-family:'Playfair Display',serif;font-size:.8rem;font-weight:700;color:var(--txt3);width:13px;flex-shrink:0}
+    .lbr.g{color:var(--gold)}.lbr.s{color:#a0b8c8}.lbr.b{color:#cd7f32}
+    .lbn{font-size:.76rem;font-weight:500;color:var(--txt);flex:1}
+    .lbp{font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--gold);background:rgba(234,176,32,.1);padding:.07rem .36rem;border-radius:3px}
+
+    /* Trending */
+    .tr-body{padding:.3rem .76rem .76rem}
+    .tri{display:flex;align-items:baseline;gap:.4rem;padding:.36rem 0;border-bottom:1px solid var(--bdr);cursor:pointer;transition:all .12s}
+    .tri:last-child{border:none}
+    .tri:hover .trt{color:var(--gold)}
+    .trn{font-family:'Playfair Display',serif;font-size:.8rem;font-weight:700;color:var(--txt3);width:12px;flex-shrink:0}
+    .trt{font-size:.73rem;line-height:1.4;color:var(--txt2);flex:1;transition:color .12s}
+    .tru{font-family:'JetBrains Mono',monospace;font-size:.57rem;color:var(--gold-dk)}
+
+    /* ── FLASH CORNER (was Find Friends) ── */
+    .fc-wrap{display:flex;flex-direction:column;height:290px}
+    .fc-tag{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--txt3);letter-spacing:.1em;text-transform:uppercase;padding:.4rem .75rem;border-bottom:1px solid var(--bdr)}
+    .fc-msgs{flex:1;padding:.5rem .65rem;overflow-y:auto;display:flex;flex-direction:column;gap:.32rem}
+    .fc-msgs::-webkit-scrollbar{width:2px}
+    .fc-msgs::-webkit-scrollbar-thumb{background:rgba(234,176,32,.15)}
+    .fc-empty{font-family:'Lora',serif;font-style:italic;font-size:.78rem;color:var(--txt3);text-align:center;padding:1.5rem .5rem}
+    .fc-msg{display:flex;gap:.38rem;align-items:flex-start}
+    .fc-msg.mine{flex-direction:row-reverse}
+    .fc-av{width:20px;height:20px;border-radius:50%;background:rgba(0,38,100,.5);border:1px solid var(--bdr);display:flex;align-items:center;justify-content:center;font-size:.52rem;color:var(--txt3);flex-shrink:0;margin-top:2px}
+    .fc-bub{max-width:85%;background:var(--ibg);border:1px solid var(--bdr);border-radius:8px;padding:.3rem .52rem;font-family:'Inter',sans-serif;font-size:.75rem;line-height:1.45;color:var(--txt)}
+    .fc-msg.mine .fc-bub{background:rgba(0,38,100,.35);border-color:rgba(0,53,160,.3)}
+    .fc-who{font-family:'JetBrains Mono',monospace;font-size:.52rem;color:var(--txt3);margin-bottom:2px}
+    .fc-msg.mine .fc-who{text-align:right}
+    .fc-irow{display:flex;gap:.3rem;padding:.4rem .55rem;border-top:1px solid var(--bdr)}
+    .fc-inp{flex:1;background:var(--ibg);border:1px solid var(--bdr);border-radius:var(--r);color:var(--txt);font-family:'Inter',sans-serif;font-size:.75rem;padding:.33rem .55rem;outline:none;transition:border-color .12s}
+    .fc-inp:focus{border-color:rgba(234,176,32,.35)}
+    .fc-inp::placeholder{color:var(--txt3)}
+    .fc-send{width:23px;height:23px;border-radius:4px;background:var(--gold);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#07101e;flex-shrink:0;transition:all .12s}
+    .fc-send:hover{background:var(--gold-lt)}
+    .fc-send svg{width:10px;height:10px}
+
+    /* ── MODALS ── */
+    .overlay{display:none;position:fixed;inset:0;z-index:300;background:rgba(7,16,30,.88);backdrop-filter:blur(12px);align-items:center;justify-content:center}
+    .overlay.open{display:flex}
+    .modal{background:var(--card);backdrop-filter:blur(24px);border:1px solid var(--bdr);border-radius:10px;padding:1.55rem;width:100%;max-width:490px;animation:mup .18s ease;position:relative}
+    .modal::before{content:'';position:absolute;top:0;left:12%;right:12%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+    @keyframes mup{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    .mtitle{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;margin-bottom:1.02rem;display:flex;align-items:center;gap:.5rem}
+    .mtitle::before{content:'';width:2px;height:16px;background:var(--gold);border-radius:1px}
+    .fg{margin-bottom:.76rem}
+    .fl{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--txt3);letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.28rem}
+    .fi,.fs,.fa{width:100%;background:var(--ibg);border:1px solid var(--bdr);border-radius:var(--r);color:var(--txt);font-family:'Inter',sans-serif;font-size:.86rem;padding:.5rem .76rem;outline:none;transition:border-color .12s}
+    .fi:focus,.fs:focus,.fa:focus{border-color:rgba(234,176,32,.4)}
+    .fa{min-height:84px;resize:vertical}
+    .fs{appearance:none;cursor:pointer}
+    .fs option{background:#0a1020}
+    .togr{display:flex;align-items:center;gap:.56rem}
+    .tog{position:relative;width:34px;height:18px}
+    .tog input{opacity:0;width:0;height:0;position:absolute}
+    .togt{position:absolute;inset:0;background:rgba(255,255,255,.1);border-radius:9px;cursor:pointer;transition:background .18s}
+    .togt::before{content:'';position:absolute;width:12px;height:12px;border-radius:50%;background:var(--txt);top:3px;left:3px;transition:transform .18s}
+    .tog input:checked+.togt{background:var(--gold)}
+    .tog input:checked+.togt::before{transform:translateX(16px)}
+    .togl{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--txt3)}
+    .mfoot{display:flex;gap:.4rem;justify-content:flex-end;margin-top:1.02rem}
+    .emsg{font-family:'JetBrains Mono',monospace;font-size:.64rem;color:#e8464a;display:none;margin-top:.25rem}
+
+    /* empty */
+    .empty{text-align:center;padding:2.8rem 1.5rem;color:var(--txt3)}
+    .emph{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:rgba(234,176,32,.18);margin-bottom:.42rem}
+    .empty p{font-family:'JetBrains Mono',monospace;font-size:.72rem}
+
+    /* toast */
+    .toast{position:fixed;bottom:1.2rem;right:1.2rem;z-index:400;background:var(--card);backdrop-filter:blur(12px);border:1px solid var(--gold);border-radius:5px;padding:.53rem .86rem;font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--txt);display:flex;align-items:center;gap:.36rem;transform:translateY(50px);opacity:0;transition:all .25s cubic-bezier(.34,1.56,.64,1)}
+    .toast.show{transform:translateY(0);opacity:1}
+    .tdot{width:5px;height:5px;border-radius:50%;background:var(--gold)}
+
+    @media(max-width:900px){.aside-col{display:none}.layout{grid-template-columns:1fr}.brand-name{font-size:1.6rem}.srch-wrap{max-width:195px}}
+    @media(max-width:600px){.mast,.snav,.feed-col{padding-left:.82rem;padding-right:.82rem}.mast-top{display:none}.uchip{display:none}}
+  </style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="bg-ov"></div>
+<div class="top-line"></div>
+
+<!-- MASTHEAD -->
+<div class="mast">
+  <div class="mast-top">
+    <span style="font-family:'Lora',serif;font-style:italic;font-size:.65rem">Kent State University · Est. 1910 · Kent, Ohio</span>
+    <div class="mast-top-r">
+      <span class="fp-chip">★ <span id="fp-n">0</span> Flash Points</span>
+      <button class="theme-btn" id="tbtn" title="Toggle light/dark">◐</button>
+    </div>
+  </div>
+  <div class="mast-main">
+    <div class="brand">
+      <div class="brand-name">
+        <span class="ks">Ks</span><span class="united">United</span>
+        <span class="brand-flash">⚡</span>
+      </div>
+      <div class="brand-ksu">Kent State University</div>
+      <div class="brand-sub">By Flashes · For Flashes · <span id="hdr-date"></span></div>
+    </div>
+    <div class="srch-wrap">
+      <svg class="srch-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="srch" id="srch" placeholder="Search posts, flairs, topics…"/>
+    </div>
+    <div class="mast-r">
+      <span class="uchip">signed in as <span class="un" id="hdr-u">guest</span></span>
+      <button class="btn btn-gh" id="btn-li">Log in</button>
+      <button class="btn btn-nv" id="btn-su">Sign up</button>
+      <button class="btn btn-gd" id="btn-ask">+ Ask</button>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION NAV -->
+<nav class="snav">
+  <button class="sb on" data-cat="all">All</button>
+  <button class="sb" data-cat="Academic">Academic</button>
+  <button class="sb" data-cat="Advising">Advising</button>
+  <button class="sb" data-cat="Dining">Dining</button>
+  <button class="sb" data-cat="Housing">Housing</button>
+  <button class="sb" data-cat="Health & Wellness">Health</button>
+  <button class="sb" data-cat="Tech Help">Tech</button>
+  <button class="sb" data-cat="Events">Events</button>
+  <button class="sb" data-cat="Clubs">Clubs</button>
+  <button class="sb" data-cat="Jobs & Co-ops">Jobs</button>
+  <button class="sb" data-cat="Tutoring">Tutoring</button>
+  <button class="sb" data-cat="Freshman Corner">Freshman</button>
+  <button class="sb" data-cat="Seniors Only">Seniors</button>
+  <button class="sb" data-cat="International">Intl</button>
+  <button class="sb" data-cat="Find Friends">Friends</button>
+  <button class="sb" data-cat="Campus Life">Campus</button>
+  <button class="sb" data-cat="Rant">Rant</button>
+  <div class="nav-end">
+    <button class="spill on" data-sort="newest">newest</button>
+    <button class="spill" data-sort="top">top</button>
+  </div>
+</nav>
+
+<!-- LAYOUT -->
+<div class="layout">
+  <div class="feed-col"><div id="feed"></div></div>
+
+  <aside class="aside-col">
+
+    <!-- FlashAI -->
+    <div class="panel">
+      <div class="ph"><div class="porb">F</div><div class="ptitle">FlashAI</div><span class="pbadge">BEDROCK</span></div>
+      <div class="ai-fd" id="ai-fd">
+        <div class="aib sys">Ask me anything about KSU — dining, housing, tuition, classes, campus life…</div>
+      </div>
+      <div class="ai-bar">
+        <input class="ai-in" id="ai-in" placeholder="Ask FlashAI…"/>
+        <button class="ai-go" id="ai-go">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+      <div class="powered">Powered by <span>FlashAI</span> · AWS Bedrock</div>
+    </div>
+
+    <!-- Flash Corner — empty chat, real users join when they post -->
+    <div class="panel">
+      <div class="ph">
+        <div class="porb" style="background:transparent;border:1px solid var(--gold);color:var(--gold);font-size:.65rem">⚡</div>
+        <div class="ptitle">Flash Corner</div>
+        <span class="pbadge" style="color:#27c97a;border-color:rgba(39,201,122,.3);background:rgba(39,201,122,.08)">OPEN</span>
+      </div>
+      <div class="fc-wrap">
+        <div class="fc-tag">community chat · anyone can join</div>
+        <div class="fc-msgs" id="fc-msgs">
+          <div class="fc-empty">No one here yet — say hi and start the conversation! 👋</div>
+        </div>
+        <div class="fc-irow">
+          <input class="fc-inp" id="fc-inp" placeholder="Say hi to fellow Flashes…"/>
+          <button class="fc-send" id="fc-send">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Flash Points Leaderboard -->
+    <div class="panel">
+      <div class="ph">
+        <div class="porb" style="background:transparent;border:1px solid var(--gold);color:var(--gold)">★</div>
+        <div class="ptitle">Flash Points</div>
+        <span class="pbadge">TOP FLASHES</span>
+      </div>
+      <div class="lb-body" id="lb"></div>
+    </div>
+
+    <!-- Trending -->
+    <div class="panel">
+      <div class="ph"><div class="ptitle">Top Stories</div></div>
+      <div class="tr-body" id="trend"></div>
+    </div>
+
+  </aside>
+</div>
+
+<!-- POST MODAL -->
+<div class="overlay" id="pm">
+  <div class="modal">
+    <div class="mtitle">Post a Question</div>
+    <div class="fg"><label class="fl">Your question</label>
+      <textarea class="fa" id="pc" placeholder="What's on your mind? Ctrl+Enter to post."></textarea></div>
+    <div class="ibox green" id="db"><span class="ilbl">Similar post found</span><span class="itxt" id="dt"></span></div>
+    <div class="fg"><label class="fl">Flair</label>
+      <select class="fs" id="pcat">
+        <option>Academic</option><option>Advising</option><option>Dining</option>
+        <option>Housing</option><option>Health & Wellness</option><option>Tech Help</option>
+        <option>Events</option><option>Clubs</option><option>Jobs & Co-ops</option>
+        <option>Tutoring</option><option>Freshman Corner</option><option>Seniors Only</option>
+        <option>International</option><option>Find Friends</option><option>Campus Life</option>
+        <option>Accessibility</option><option>Rant</option>
+      </select></div>
+    <div class="togr">
+      <label class="tog"><input type="checkbox" id="pa" checked/><span class="togt"></span></label>
+      <span class="togl">post anonymously</span>
+    </div>
+    <div class="mfoot">
+      <button class="btn btn-gh" id="pc-x">cancel</button>
+      <button class="btn btn-gd" id="pc-ok">Publish</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div class="overlay" id="lm">
+  <div class="modal" style="max-width:365px">
+    <div class="mtitle">Log In</div>
+    <div class="fg"><label class="fl">Email</label><input class="fi" id="le" type="email" placeholder="you@kent.edu"/></div>
+    <div class="fg"><label class="fl">Password</label><input class="fi" id="lp" type="password" placeholder="••••••••"/></div>
+    <div class="emsg" id="le-e"></div>
+    <div class="mfoot"><button class="btn btn-gh" id="lm-x">cancel</button><button class="btn btn-gd" id="lm-ok">Log In</button></div>
+  </div>
+</div>
+
+<!-- SIGNUP -->
+<div class="overlay" id="sm">
+  <div class="modal" style="max-width:385px">
+    <div class="mtitle">Join KsUnited ⚡</div>
+    <div class="fg"><label class="fl">KSU Email</label><input class="fi" id="se" type="email" placeholder="you@kent.edu"/></div>
+    <div class="fg"><label class="fl">Display Name</label><input class="fi" id="sn" placeholder="FlashFan42"/></div>
+    <div class="fg"><label class="fl">Password</label><input class="fi" id="sp" type="password" placeholder="••••••••"/></div>
+    <div class="fg"><label class="fl">Year</label>
+      <select class="fs" id="sy"><option>Freshman</option><option>Sophomore</option><option>Junior</option><option>Senior</option><option>Graduate</option></select></div>
+    <div class="emsg" id="se-e"></div>
+    <div class="mfoot"><button class="btn btn-gh" id="sm-x">cancel</button><button class="btn btn-gd" id="sm-ok">Create Account</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span class="tdot"></span><span id="tmsg">done!</span></div>
+
+<script>
+// ── STATE ──
+let posts=[],activeCat='all',sortMode='newest',me=null,srchQ='';
+let fp=+localStorage.getItem('fp')||0;
+let fcMsgs=[];
+
+const $=id=>document.getElementById(id);
+
+function toast(msg,col){
+  $('tmsg').textContent=msg;
+  const t=$('toast');t.style.borderColor=col||'var(--gold)';
+  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);
+}
+function ago(s){
+  const d=new Date(s+(s.includes('Z')?'':'Z')),sec=(Date.now()-d)/1000;
+  if(sec<60)return 'just now';if(sec<3600)return Math.floor(sec/60)+'m';
+  if(sec<86400)return Math.floor(sec/3600)+'h';return Math.floor(sec/86400)+'d';
+}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function parseMentions(txt){return esc(txt).replace(/@(\w+)/g,'<span class="mention">@$1</span>')}
+function fcls(cat){
+  const c=(cat||'').toLowerCase();
+  if(c.includes('academic'))return 'fl-ac';if(c.includes('advis'))return 'fl-ad';
+  if(c.includes('dining'))return 'fl-di';if(c.includes('housing'))return 'fl-ho';
+  if(c.includes('health'))return 'fl-he';if(c.includes('tech'))return 'fl-te';
+  if(c.includes('event'))return 'fl-ev';if(c.includes('rant'))return 'fl-ra';
+  if(c.includes('friend'))return 'fl-fr';return 'fl-xx';
+}
+
+// Flash Points
+function addFP(n,lbl){
+  fp+=n;localStorage.setItem('fp',fp);$('fp-n').textContent=fp;
+  toast('+'+n+' Flash Points — '+lbl+' ★','var(--gold)');updateLB();
+}
+function updateLB(){
+  const all=JSON.parse(localStorage.getItem('lb')||'[]');
+  if(me&&me.username){
+    const i=all.findIndex(x=>x.n===me.username);
+    if(i>=0)all[i].p=fp;else all.push({n:me.username,p:fp});
+    all.sort((a,b)=>b.p-a.p);localStorage.setItem('lb',JSON.stringify(all.slice(0,10)));
+  }
+  const lb=$('lb');const data=JSON.parse(localStorage.getItem('lb')||'[]');
+  if(!data.length){lb.innerHTML='<div style="font-family:\'JetBrains Mono\',monospace;font-size:.67rem;color:var(--txt3);padding:.58rem .76rem">post questions to earn points!</div>';return;}
+  const rc=['g','s','b'];
+  lb.innerHTML=data.slice(0,5).map((x,i)=>`<div class="lbi"><span class="lbr ${rc[i]||''}">${i+1}</span><span class="lbn">${esc(x.n)}</span><span class="lbp">${x.p}pts</span></div>`).join('');
+}
+
+// date
+function setDate(){
+  const d=new Date();
+  const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  $('hdr-date').textContent=days[d.getDay()]+', '+months[d.getMonth()]+' '+d.getDate()+', '+d.getFullYear();
+}
+setDate();$('fp-n').textContent=fp;updateLB();
+
+// theme — NO flashing in light mode, just smooth transition
+$('tbtn').addEventListener('click',()=>{
+  const h=document.documentElement;
+  h.setAttribute('data-theme',h.getAttribute('data-theme')==='dark'?'light':'dark');
+});
+
+// ── AUTH ──
+async function checkAuth(){
+  try{const r=await fetch('/me');const d=await r.json();
+    if(d.logged_in){me=d;$('hdr-u').textContent=d.username;$('btn-li').style.display='none';$('btn-su').style.display='none';}}
+  catch(e){}
+}
+$('btn-li').addEventListener('click',()=>$('lm').classList.add('open'));
+$('lm-x').addEventListener('click',()=>$('lm').classList.remove('open'));
+$('lm-ok').addEventListener('click',async()=>{
+  const err=$('le-e');err.style.display='none';
+  try{const r=await fetch('/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:$('le').value.trim(),password:$('lp').value})});
+    const d=await r.json();
+    if(d.success){me=d;$('hdr-u').textContent=d.username;$('btn-li').style.display='none';$('btn-su').style.display='none';$('lm').classList.remove('open');addFP(50,'logged in!');}
+    else{err.textContent=d.error;err.style.display='block';}}
+  catch(e){err.textContent='Something went wrong';err.style.display='block';}
+});
+$('btn-su').addEventListener('click',()=>$('sm').classList.add('open'));
+$('sm-x').addEventListener('click',()=>$('sm').classList.remove('open'));
+$('sm-ok').addEventListener('click',async()=>{
+  const err=$('se-e');err.style.display='none';
+  try{const r=await fetch('/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:$('se').value.trim(),username:$('sn').value.trim(),password:$('sp').value,year:$('sy').value})});
+    const d=await r.json();
+    if(d.success){me=d;$('hdr-u').textContent=d.username;$('btn-li').style.display='none';$('btn-su').style.display='none';$('sm').classList.remove('open');addFP(100,'joined KsUnited!');}
+    else{err.textContent=d.error;err.style.display='block';}}
+  catch(e){err.textContent='Something went wrong';err.style.display='block';}
+});
+
+// search
+$('srch').addEventListener('input',()=>{srchQ=$('srch').value.trim().toLowerCase();render(filtered());});
+
+// ── POSTS ──
+async function load(){
+  try{const r=await fetch('/posts');posts=await r.json();render(filtered());updateTrend();updateMood();updateLB();}
+  catch(e){posts=[];render([]);}
+}
+function filtered(){
+  let p=activeCat==='all'?posts:posts.filter(x=>x.category===activeCat);
+  if(sortMode==='top')p=[...p].sort((a,b)=>b.upvotes-a.upvotes);
+  if(srchQ)p=p.filter(x=>(x.content+' '+x.category+' '+(x.username||'')).toLowerCase().includes(srchQ));
+  return p;
+}
+function render(list){
+  const f=$('feed');
+  if(!list.length){f.innerHTML='<div class="empty"><div class="emph">No posts found.</div><p>Be the first Flash to ask!</p></div>';return;}
+  f.innerHTML=list.map(card).join('');
+  f.querySelectorAll('.uvb').forEach(b=>b.addEventListener('click',()=>upvote(+b.dataset.id)));
+  f.querySelectorAll('.rtb').forEach(b=>b.addEventListener('click',()=>togT(b)));
+  f.querySelectorAll('.tlb').forEach(b=>b.addEventListener('click',()=>tldr(+b.dataset.id)));
+  f.querySelectorAll('.aibtn').forEach(b=>b.addEventListener('click',()=>askAI('Help with: "'+b.dataset.q+'"')));
+  f.querySelectorAll('.rsb').forEach(b=>b.addEventListener('click',()=>sendRep(+b.dataset.id)));
+  // Enter key for replies
+  f.querySelectorAll('.r-inp').forEach(inp=>{
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendRep(+inp.dataset.id);}});
+  });
+}
+function card(p){
+  const uv=(JSON.parse(localStorage.getItem('uv')||'[]')).includes(p.id);
+  const au=p.anonymous?'Anonymous':(p.username||'Anonymous');
+  return `<div class="post-card" id="pc-${p.id}">
+    <div class="ptop"><span class="flair ${fcls(p.category)}">${esc(p.category)}</span><span class="pmeta">by <strong>${esc(au)}</strong></span><span class="ptime">${ago(p.created_at)}</span></div>
+    <div class="pbody">${esc(p.content)}</div>
+    <div class="ibox" id="sb-${p.id}"><span class="ilbl">TL;DR</span><span class="itxt" id="st-${p.id}"></span></div>
+    <div class="pacts">
+      <button class="act uvb ${uv?'upvoted':''}" data-id="${p.id}">
+        <svg viewBox="0 0 24 24" fill="${uv?'currentColor':'none'}" stroke="currentColor" stroke-width="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+        <span class="uvn">${p.upvotes}</span>
+      </button>
+      <button class="act rtb" data-id="${p.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg><span class="rl">replies</span></button>
+      <button class="act tlb" data-id="${p.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>tl;dr</button>
+      <button class="act aibtn" data-q="${esc(p.content).slice(0,100)}">ask AI</button>
+    </div>
+    <div class="thread" id="th-${p.id}">
+      <div class="rw" id="rw-${p.id}"></div>
+      <div class="r-irow">
+        <input class="r-inp" id="ri-${p.id}" data-id="${p.id}" placeholder="Reply… use @name to mention"/>
+        <button class="btn btn-gd rsb" data-id="${p.id}" style="padding:.28rem .6rem;font-size:.73rem;font-weight:600">Send</button>
+      </div>
+    </div>
+  </div>`;
+}
+async function upvote(id){
+  const uv=JSON.parse(localStorage.getItem('uv')||'[]');if(uv.includes(id))return;
+  await fetch('/upvote/'+id,{method:'POST'});
+  uv.push(id);localStorage.setItem('uv',JSON.stringify(uv));
+  const p=posts.find(x=>x.id===id);if(p)p.upvotes++;
+  const b=document.querySelector('.uvb[data-id="'+id+'"]');
+  if(b){b.classList.add('upvoted');b.querySelector('.uvn').textContent=p.upvotes;b.querySelector('svg').setAttribute('fill','currentColor');}
+  addFP(5,'upvoted a post');updateTrend();
+}
+function togT(btn){
+  const id=btn.dataset.id,th=$('th-'+id),lb=btn.querySelector('.rl');
+  th.classList.toggle('open');
+  if(th.classList.contains('open')){lb.textContent='hide';loadReps(+id);}
+  else lb.textContent='replies';
+}
+async function loadReps(id){
+  const w=$('rw-'+id);
+  try{const r=await fetch('/replies/'+id);const d=await r.json();
+    if(!d.length){w.innerHTML='<div style="font-family:\'JetBrains Mono\',monospace;font-size:.64rem;color:var(--txt3);padding:.28rem 0 .28rem 8px">no replies yet</div>';return;}
+    w.innerHTML=d.map(r=>`<div class="r-item ${r.username==='FlashAI'?'air':''}">
+      <div class="r-top"><div class="r-av">${r.username==='FlashAI'?'F':(r.anonymous?'?':r.username[0].toUpperCase())}</div>
+      <span class="r-name"><strong>${r.anonymous?'Anonymous':esc(r.username)}</strong></span>
+      <span class="r-time">${ago(r.created_at)}</span></div>
+      <div class="r-txt">${parseMentions(r.content)}</div></div>`).join('');}
+  catch(e){w.innerHTML='<div style="font-family:\'JetBrains Mono\',monospace;font-size:.64rem;color:var(--txt3);padding:.28rem 0 .28rem 8px">could not load</div>';}
+}
+async function sendRep(id){
+  const inp=$('ri-'+id),content=inp.value.trim();if(!content)return;
+  await fetch('/reply/'+id,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({content,anonymous:!me,username:me?me.username:'Anonymous'})});
+  inp.value='';loadReps(id);addFP(15,'replied to a post');
+}
+
+// new post
+$('btn-ask').addEventListener('click',()=>$('pm').classList.add('open'));
+$('pc-x').addEventListener('click',()=>$('pm').classList.remove('open'));
+$('pc').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.ctrlKey)submitPost();});
+let dt2;
+$('pc').addEventListener('input',()=>{
+  clearTimeout(dt2);dt2=setTimeout(async()=>{
+    const v=$('pc').value.trim();if(v.length<20)return;
+    try{const r=await fetch('/check-duplicate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({content:v})});
+      const d=await r.json();const box=$('db');
+      if(d.is_duplicate&&d.similar){$('dt').textContent='"'+d.similar.slice(0,80)+'…"';box.classList.add('show');}
+      else box.classList.remove('show');}catch(e){}},800);
+});
+async function submitPost(){
+  const content=$('pc').value.trim();if(!content){toast('write your question first!');return;}
+  try{await fetch('/post',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({content,category:$('pcat').value,anonymous:$('pa').checked,username:me?me.username:'Anonymous'})});
+    $('pc').value='';$('db').classList.remove('show');$('pm').classList.remove('open');addFP(10,'posted a question');await load();}
+  catch(e){toast('could not post');}
+}
+$('pc-ok').addEventListener('click',submitPost);
+
+// TL;DR
+async function tldr(id){
+  const box=$('sb-'+id),txt=$('st-'+id);box.classList.add('show');txt.textContent='summarizing…';
+  try{const r=await fetch('/summarize/'+id,{method:'POST'});const d=await r.json();txt.textContent=d.summary;}
+  catch(e){txt.textContent='could not summarize';}
+}
+
+// AI — updated system prompt with real KSU facts
+function addAImsg(t,c){const b=$('ai-fd'),el=document.createElement('div');el.className='aib '+c;el.textContent=t;b.appendChild(el);b.scrollTop=b.scrollHeight;}
+function showDots(){const b=$('ai-fd'),el=document.createElement('div');el.className='dots';el.innerHTML='<span></span><span></span><span></span>';b.appendChild(el);b.scrollTop=b.scrollHeight;return el;}
+async function askAI(q){
+  if(!q)q=$('ai-in').value.trim();if(!q)return;
+  $('ai-in').value='';addAImsg(q,'usr');const d=showDots();
+  try{const r=await fetch('/ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q})});
+    d.remove();const data=await r.json();addAImsg(data.answer||'No answer.','bot');}
+  catch(e){d.remove();addAImsg('FlashAI is offline.','sys');}
+}
+$('ai-go').addEventListener('click',()=>askAI($('ai-in').value.trim()));
+$('ai-in').addEventListener('keydown',e=>{if(e.key==='Enter')askAI($('ai-in').value.trim());});
+
+// ── FLASH CORNER (empty chat — real students join when they type) ──
+function renderFC(){
+  const box=$('fc-msgs');
+  if(!fcMsgs.length){
+    box.innerHTML='<div class="fc-empty">No one here yet — say hi and start the conversation! 👋</div>';
+    return;
+  }
+  box.innerHTML=fcMsgs.map(m=>`
+    <div class="fc-msg ${m.mine?'mine':''}">
+      <div class="fc-av">${m.from[0].toUpperCase()}</div>
+      <div><div class="fc-who">${m.mine?'you':m.from}</div>
+      <div class="fc-bub">${parseMentions(m.txt)}</div></div>
+    </div>`).join('');
+  box.scrollTop=box.scrollHeight;
+}
+function fcSend(){
+  const inp=$('fc-inp'),txt=inp.value.trim();if(!txt)return;
+  const name=me?me.username:'Anonymous';
+  fcMsgs.push({from:name,txt,mine:true});
+  inp.value='';renderFC();
+}
+$('fc-send').addEventListener('click',fcSend);
+$('fc-inp').addEventListener('keydown',e=>{if(e.key==='Enter')fcSend();});
+renderFC();
+
+// section nav
+document.querySelectorAll('.sb').forEach(b=>{b.addEventListener('click',()=>{document.querySelectorAll('.sb').forEach(x=>x.classList.remove('on'));b.classList.add('on');activeCat=b.dataset.cat;render(filtered());});});
+document.querySelectorAll('.spill').forEach(b=>{b.addEventListener('click',()=>{document.querySelectorAll('.spill').forEach(x=>x.classList.remove('on'));b.classList.add('on');sortMode=b.dataset.sort;render(filtered());});});
+
+// trending + mood
+function updateTrend(){
+  const top=[...posts].sort((a,b)=>b.upvotes-a.upvotes).slice(0,5);
+  const el=$('trend');
+  if(!top.length){el.innerHTML='<div style="font-family:\'JetBrains Mono\',monospace;font-size:.7rem;color:var(--txt3);padding:.78rem">no trending yet</div>';return;}
+  el.innerHTML=top.map((p,i)=>`<div class="tri" onclick="gp(${p.id})"><span class="trn">${i+1}</span><span class="trt">${esc(p.content.slice(0,50))}${p.content.length>50?'…':''}</span><span class="tru">+${p.upvotes}</span></div>`).join('');
+}
+function updateMood(){
+  if(!posts.length)return;
+  const s=posts.map(p=>p.sentiment||'neutral'),n=s.length;
+  const pos=s.filter(x=>x==='positive').length,neg=s.filter(x=>x==='negative').length,neu=n-pos-neg;
+  const mp=$('mp'),mn=$('mn'),mg=$('mg');
+  if(mp)mp.style.width=Math.round(pos/n*100)+'%';
+  if(mn)mn.style.width=Math.round(neu/n*100)+'%';
+  if(mg)mg.style.width=Math.round(neg/n*100)+'%';
+}
+window.gp=id=>{const el=$('pc-'+id);if(el)el.scrollIntoView({behavior:'smooth',block:'center'});};
+['pm','lm','sm'].forEach(id=>{$(id).addEventListener('click',e=>{if(e.target===$(id))$(id).classList.remove('open');});});
+
+checkAuth();load();setInterval(load,30000);
+</script>
+</body>
+</html>
