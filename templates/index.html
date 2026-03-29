@@ -41,71 +41,134 @@
     html{scroll-behavior:smooth}
     body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden;transition:background .3s,color .3s}
 
-    /* ── BACKGROUND — your KSU arch photo ── */
-    .bg{
-      position:fixed;inset:0;z-index:0;
-      background-image:url('/static/campus.jpg');
-      background-size:cover;
-      background-position:center 30%;
-    }
+    .bg{position:fixed;inset:0;z-index:0;background-image:url('/static/campus.jpg');background-size:cover;background-position:center 30%;}
     [data-theme="dark"]  .bg{filter:brightness(.22) saturate(.75)}
     [data-theme="light"] .bg{filter:brightness(.92) saturate(.5);opacity:.18}
-
-    .bg-ov{position:fixed;inset:0;z-index:1;
-      background:radial-gradient(ellipse 100% 55% at 50% 0%,rgba(0,38,100,.5) 0%,transparent 68%);
-      pointer-events:none}
+    .bg-ov{position:fixed;inset:0;z-index:1;background:radial-gradient(ellipse 100% 55% at 50% 0%,rgba(0,38,100,.5) 0%,transparent 68%);pointer-events:none}
     [data-theme="light"] .bg-ov{opacity:0}
+    .top-line{position:fixed;top:0;left:0;right:0;height:2px;z-index:200;background:linear-gradient(90deg,transparent,var(--navy),var(--gold),var(--navy),transparent)}
 
-    .top-line{position:fixed;top:0;left:0;right:0;height:2px;z-index:200;
-      background:linear-gradient(90deg,transparent,var(--navy),var(--gold),var(--navy),transparent)}
+    /* ══════════════════════════════════════
+       LANDING PAGE
+    ══════════════════════════════════════ */
+    #landing {
+      position:fixed;inset:0;z-index:500;
+      display:flex;align-items:center;justify-content:center;
+      background:var(--bg);
+      transition:opacity .4s ease;
+    }
+    #landing.hidden{opacity:0;pointer-events:none}
 
-    /* ── MASTHEAD ── */
+    .land-wrap{
+      display:flex;align-items:stretch;
+      width:100%;max-width:900px;
+      min-height:520px;
+      background:var(--card);
+      backdrop-filter:blur(24px);
+      border:1px solid var(--bdr);
+      border-radius:16px;
+      overflow:hidden;
+      box-shadow:0 32px 80px rgba(0,0,0,.5);
+      margin:1rem;
+    }
+
+    /* Left hero panel */
+    .land-hero{
+      flex:1;
+      background:linear-gradient(145deg,rgba(0,38,100,.9) 0%,rgba(0,20,60,.95) 100%);
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      padding:3rem 2.5rem;
+      position:relative;
+      overflow:hidden;
+    }
+    .land-hero::before{
+      content:'';position:absolute;inset:0;
+      background:url('/static/campus.jpg') center/cover;
+      opacity:.12;
+    }
+    .land-hero-content{position:relative;z-index:1;text-align:center}
+    .land-logo{
+      font-family:'Playfair Display',serif;font-size:3rem;font-weight:900;
+      line-height:1;margin-bottom:.5rem;
+    }
+    .land-logo .ks{color:#fff}
+    .land-logo .united{color:var(--gold)}
+    .land-flash{font-size:2.4rem;color:var(--gold)}
+    .land-tagline{font-family:'Lora',serif;font-style:italic;font-size:1rem;color:rgba(255,255,255,.7);margin-bottom:2rem}
+    .land-pills{display:flex;flex-wrap:wrap;gap:.4rem;justify-content:center;margin-bottom:2rem}
+    .land-pill{font-family:'JetBrains Mono',monospace;font-size:.58rem;padding:.2rem .55rem;border-radius:20px;background:rgba(234,176,32,.12);border:1px solid rgba(234,176,32,.25);color:var(--gold);letter-spacing:.06em}
+    .land-stats{display:flex;gap:2rem}
+    .land-stat{text-align:center}
+    .land-stat-n{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;color:var(--gold)}
+    .land-stat-l{font-family:'JetBrains Mono',monospace;font-size:.55rem;color:rgba(255,255,255,.5);letter-spacing:.1em;text-transform:uppercase}
+
+    /* Right auth panel */
+    .land-auth{
+      width:360px;flex-shrink:0;
+      padding:2.5rem 2rem;
+      display:flex;flex-direction:column;
+      justify-content:center;
+      gap:0;
+    }
+
+    .auth-tab-row{display:flex;gap:.3rem;margin-bottom:1.5rem}
+    .auth-tab{flex:1;font-family:'Inter',sans-serif;font-size:.8rem;font-weight:600;padding:.45rem;border-radius:6px;border:1px solid var(--bdr);background:none;color:var(--txt3);cursor:pointer;transition:all .15s;text-align:center}
+    .auth-tab.on{background:var(--gold);color:#07101e;border-color:var(--gold)}
+
+    .auth-form{display:none;flex-direction:column;gap:.65rem}
+    .auth-form.on{display:flex}
+
+    .auth-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;margin-bottom:.2rem}
+    .auth-sub{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--txt3);letter-spacing:.08em;margin-bottom:.5rem}
+
+    .fg{display:flex;flex-direction:column;gap:.22rem}
+    .fl{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--txt3);letter-spacing:.12em;text-transform:uppercase}
+    .fi,.fs{width:100%;background:var(--ibg);border:1px solid var(--bdr);border-radius:var(--r);color:var(--txt);font-family:'Inter',sans-serif;font-size:.84rem;padding:.48rem .75rem;outline:none;transition:border-color .12s}
+    .fi:focus,.fs:focus{border-color:rgba(234,176,32,.4);box-shadow:0 0 0 3px rgba(234,176,32,.07)}
+    .fs{appearance:none;cursor:pointer}
+    .fs option{background:#0a1020}
+
+    .btn-full{width:100%;font-family:'Inter',sans-serif;font-size:.84rem;font-weight:700;border-radius:var(--r);padding:.52rem;cursor:pointer;border:none;transition:all .15s}
+    .btn-gold{background:var(--gold);color:#07101e}
+    .btn-gold:hover{background:var(--gold-lt);transform:translateY(-1px);box-shadow:0 4px 14px rgba(234,176,32,.3)}
+    .btn-ghost{background:transparent;color:var(--txt2);border:1px solid var(--bdr);margin-top:.3rem}
+    .btn-ghost:hover{color:var(--txt);border-color:var(--txt3)}
+
+    .auth-err{font-family:'JetBrains Mono',monospace;font-size:.63rem;color:#e8464a;display:none;padding:.3rem .5rem;background:rgba(232,70,74,.08);border-radius:4px;border:1px solid rgba(232,70,74,.2)}
+    .auth-ok{font-family:'JetBrains Mono',monospace;font-size:.63rem;color:#27c97a;display:none;padding:.3rem .5rem;background:rgba(39,201,122,.08);border-radius:4px;border:1px solid rgba(39,201,122,.2)}
+
+    .forgot-link{font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--txt3);text-align:right;cursor:pointer;transition:color .12s;text-decoration:underline;background:none;border:none;padding:0;margin-top:-.3rem}
+    .forgot-link:hover{color:var(--gold)}
+
+    .divider{display:flex;align-items:center;gap:.5rem;margin:.2rem 0}
+    .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--bdr)}
+    .divider span{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--txt3)}
+
+    /* ══════════════════════════════════════
+       MAIN APP (hidden until logged in)
+    ══════════════════════════════════════ */
+    #app{display:none}
+    #app.show{display:block}
+
+    /* MASTHEAD */
     .mast{position:relative;z-index:100;background:var(--bg2);backdrop-filter:blur(20px);border-bottom:1px solid var(--bdr);padding:0 1.5rem;margin-top:2px}
-
-    .mast-top{
-      display:flex;align-items:center;justify-content:space-between;
-      padding:.3rem 0;border-bottom:1px solid var(--bdr);
-      font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--txt3);letter-spacing:.1em
-    }
+    .mast-top{display:flex;align-items:center;justify-content:space-between;padding:.3rem 0;border-bottom:1px solid var(--bdr);font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--txt3);letter-spacing:.1em}
     .mast-top-r{display:flex;align-items:center;gap:.65rem}
-    /* flash points — no animation, just static */
-    .fp-chip{
-      display:flex;align-items:center;gap:.26rem;
-      background:rgba(234,176,32,.1);border:1px solid rgba(234,176,32,.22);
-      border-radius:20px;padding:.17rem .52rem;
-      font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--gold)
-    }
+    .fp-chip{display:flex;align-items:center;gap:.26rem;background:rgba(234,176,32,.1);border:1px solid rgba(234,176,32,.22);border-radius:20px;padding:.17rem .52rem;font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--gold)}
     .theme-btn{background:none;border:none;cursor:pointer;font-size:.8rem;color:var(--txt2);padding:.15rem .35rem;border-radius:4px;transition:color .12s}
     .theme-btn:hover{color:var(--gold)}
-
-    /* brand row */
     .mast-main{display:flex;align-items:center;justify-content:space-between;padding:.68rem 0;gap:1rem}
     .brand{display:flex;flex-direction:column;gap:.16rem}
-
-    /* KsUnited ⚡ — flash sign as text, no animation */
-    .brand-name{
-      font-family:'Playfair Display',serif;
-      font-size:2.1rem;font-weight:900;line-height:1;letter-spacing:-.02em;
-      display:flex;align-items:center;gap:.25rem
-    }
-    .brand-name .ks{color:var(--txt)}
-    .brand-name .united{color:var(--gold)}
-    .brand-flash{
-      font-size:1.6rem;color:var(--gold);
-      font-family:'Inter',sans-serif;font-weight:700;
-      /* NO animation — static flash sign */
-    }
+    .brand-name{font-family:'Playfair Display',serif;font-size:2.1rem;font-weight:900;line-height:1;letter-spacing:-.02em;display:flex;align-items:center;gap:.25rem}
+    .brand-name .ks{color:var(--txt)}.brand-name .united{color:var(--gold)}
+    .brand-flash{font-size:1.6rem;color:var(--gold);font-family:'Inter',sans-serif;font-weight:700}
     .brand-ksu{font-family:'Lora',serif;font-size:.78rem;font-style:italic;color:var(--txt2);letter-spacing:.04em}
     .brand-sub{font-family:'JetBrains Mono',monospace;font-size:.54rem;color:var(--txt3);letter-spacing:.16em;text-transform:uppercase}
-
-    /* search */
     .srch-wrap{flex:1;max-width:380px;position:relative}
     .srch{width:100%;background:var(--ibg);border:1px solid var(--bdr);border-radius:20px;color:var(--txt);font-family:'Inter',sans-serif;font-size:.83rem;padding:.47rem 1rem .47rem 2.25rem;outline:none;transition:border-color .12s,box-shadow .12s}
     .srch:focus{border-color:rgba(234,176,32,.4);box-shadow:0 0 0 3px rgba(234,176,32,.08)}
     .srch::placeholder{color:var(--txt3)}
     .srch-ic{position:absolute;left:.76rem;top:50%;transform:translateY(-50%);color:var(--txt3);width:13px;height:13px;pointer-events:none}
-
-    /* buttons */
     .mast-r{display:flex;align-items:center;gap:.4rem;flex-shrink:0}
     .uchip{font-family:'JetBrains Mono',monospace;font-size:.66rem;color:var(--txt2)}
     .uchip .un{color:var(--gold)}
@@ -116,25 +179,26 @@
     .btn-nv:hover{background:rgba(0,53,160,.65)}
     .btn-gd{background:var(--gold);color:#07101e;font-weight:700}
     .btn-gd:hover{background:var(--gold-lt);transform:translateY(-1px);box-shadow:0 4px 14px rgba(234,176,32,.3)}
+    .btn-red{background:rgba(232,70,74,.15);color:#e8464a;border:1px solid rgba(232,70,74,.25)}
+    .btn-red:hover{background:rgba(232,70,74,.25)}
 
-    /* ── SECTION NAV ── */
+    /* SECTION NAV */
     .snav{position:sticky;top:0;z-index:90;background:var(--bg2);backdrop-filter:blur(16px);border-bottom:1px solid var(--bdr);display:flex;align-items:center;overflow-x:auto;scrollbar-width:none}
     .snav::-webkit-scrollbar{display:none}
     .sb{font-family:'Inter',sans-serif;font-size:.74rem;font-weight:500;background:none;border:none;color:var(--txt2);padding:.55rem .92rem;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all .12s;flex-shrink:0}
-    .sb:hover{color:var(--txt)}
-    .sb.on{color:var(--gold);border-bottom-color:var(--gold)}
+    .sb:hover{color:var(--txt)}.sb.on{color:var(--gold);border-bottom-color:var(--gold)}
     .nav-end{margin-left:auto;display:flex;align-items:center;gap:.3rem;padding:0 .88rem;flex-shrink:0}
     .spill{font-family:'JetBrains Mono',monospace;font-size:.62rem;background:none;border:1px solid transparent;color:var(--txt3);padding:.17rem .48rem;border-radius:20px;cursor:pointer;transition:all .12s}
     .spill.on,.spill:hover{border-color:rgba(234,176,32,.3);color:var(--gold)}
 
-    /* ── LAYOUT ── */
+    /* LAYOUT */
     .layout{position:relative;z-index:5;display:grid;grid-template-columns:1fr 282px;max-width:1280px;margin:0 auto;min-height:calc(100vh - 128px)}
 
-    /* ── FEED ── */
+    /* FEED */
     .feed-col{padding:1.3rem 1.65rem;border-right:1px solid var(--bdr)}
 
-    /* ── POST CARD ── */
-    .post-card{background:var(--card);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--bdr);border-radius:var(--r);padding:.86rem 1.1rem;margin-bottom:.5rem;transition:border-color .15s,transform .15s,box-shadow .15s;position:relative;overflow:hidden}
+    /* POST CARD */
+    .post-card{background:var(--card);backdrop-filter:blur(18px);border:1px solid var(--bdr);border-radius:var(--r);padding:.86rem 1.1rem;margin-bottom:.5rem;transition:border-color .15s,transform .15s,box-shadow .15s;position:relative;overflow:hidden}
     .post-card:hover{border-color:rgba(234,176,32,.3);transform:translateY(-1px);box-shadow:var(--sh)}
     .post-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:transparent;transition:background .15s}
     .post-card:hover::after{background:linear-gradient(90deg,transparent,var(--gold),transparent)}
@@ -168,10 +232,12 @@
     .act{font-family:'JetBrains Mono',monospace;font-size:.65rem;background:none;border:none;color:var(--txt3);cursor:pointer;display:flex;align-items:center;gap:.25rem;padding:.2rem .4rem;border-radius:4px;transition:all .12s}
     .act:hover{color:var(--txt);background:var(--ibg)}
     .act.upvoted{color:var(--gold)}
+    .act.del-act{color:rgba(232,70,74,.5)}
+    .act.del-act:hover{color:#e8464a;background:rgba(232,70,74,.08)}
     .act svg{width:12px;height:12px}
     .uvn{font-family:'Inter',sans-serif;font-size:.82rem;font-weight:700}
 
-    /* ── REPLY THREAD with Reddit-style connecting lines ── */
+    /* REPLY THREAD */
     .thread{display:none;margin-top:.65rem;padding-top:.6rem;border-top:1px solid var(--bdr)}
     .thread.open{display:block}
     .rw{position:relative;padding-left:18px}
@@ -192,7 +258,7 @@
     .r-inp:focus{border-color:rgba(234,176,32,.35)}
     .r-inp::placeholder{color:var(--txt3)}
 
-    /* ── ASIDE ── */
+    /* ASIDE */
     .aside-col{padding:1.3rem .92rem;display:flex;flex-direction:column;gap:.82rem}
     .panel{background:var(--card);backdrop-filter:blur(18px);border:1px solid var(--bdr);border-radius:var(--r);overflow:hidden}
     .ph{display:flex;align-items:center;gap:.46rem;padding:.56rem .86rem;background:rgba(0,38,100,.14);border-bottom:1px solid var(--bdr)}
@@ -223,7 +289,7 @@
     .powered{font-family:'JetBrains Mono',monospace;font-size:.52rem;color:var(--txt3);letter-spacing:.1em;text-align:center;padding:.26rem;border-top:1px solid var(--bdr)}
     .powered span{color:var(--gold)}
 
-    /* Flash Points Leaderboard */
+    /* Leaderboard */
     .lb-body{padding:.42rem .76rem .76rem}
     .lbi{display:flex;align-items:center;gap:.5rem;padding:.38rem 0;border-bottom:1px solid var(--bdr)}
     .lbi:last-child{border:none}
@@ -241,7 +307,7 @@
     .trt{font-size:.73rem;line-height:1.4;color:var(--txt2);flex:1;transition:color .12s}
     .tru{font-family:'JetBrains Mono',monospace;font-size:.57rem;color:var(--gold-dk)}
 
-    /* ── FLASH CORNER (was Find Friends) ── */
+    /* Flash Corner */
     .fc-wrap{display:flex;flex-direction:column;height:290px}
     .fc-tag{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--txt3);letter-spacing:.1em;text-transform:uppercase;padding:.4rem .75rem;border-bottom:1px solid var(--bdr)}
     .fc-msgs{flex:1;padding:.5rem .65rem;overflow-y:auto;display:flex;flex-direction:column;gap:.32rem}
@@ -263,7 +329,7 @@
     .fc-send:hover{background:var(--gold-lt)}
     .fc-send svg{width:10px;height:10px}
 
-    /* ── MODALS ── */
+    /* POST MODAL */
     .overlay{display:none;position:fixed;inset:0;z-index:300;background:rgba(7,16,30,.88);backdrop-filter:blur(12px);align-items:center;justify-content:center}
     .overlay.open{display:flex}
     .modal{background:var(--card);backdrop-filter:blur(24px);border:1px solid var(--bdr);border-radius:10px;padding:1.55rem;width:100%;max-width:490px;animation:mup .18s ease;position:relative}
@@ -271,13 +337,12 @@
     @keyframes mup{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
     .mtitle{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;margin-bottom:1.02rem;display:flex;align-items:center;gap:.5rem}
     .mtitle::before{content:'';width:2px;height:16px;background:var(--gold);border-radius:1px}
-    .fg{margin-bottom:.76rem}
-    .fl{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--txt3);letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:.28rem}
-    .fi,.fs,.fa{width:100%;background:var(--ibg);border:1px solid var(--bdr);border-radius:var(--r);color:var(--txt);font-family:'Inter',sans-serif;font-size:.86rem;padding:.5rem .76rem;outline:none;transition:border-color .12s}
-    .fi:focus,.fs:focus,.fa:focus{border-color:rgba(234,176,32,.4)}
-    .fa{min-height:84px;resize:vertical}
-    .fs{appearance:none;cursor:pointer}
-    .fs option{background:#0a1020}
+    .fg2{margin-bottom:.76rem}
+    .fa,.fs2{width:100%;background:var(--ibg);border:1px solid var(--bdr);border-radius:var(--r);color:var(--txt);font-family:'Inter',sans-serif;font-size:.86rem;padding:.5rem .76rem;outline:none;transition:border-color .12s}
+    .fa{min-height:84px;resize:vertical;font-family:'Lora',serif}
+    .fa:focus,.fs2:focus{border-color:rgba(234,176,32,.4)}
+    .fs2{appearance:none;cursor:pointer}
+    .fs2 option{background:#0a1020}
     .togr{display:flex;align-items:center;gap:.56rem}
     .tog{position:relative;width:34px;height:18px}
     .tog input{opacity:0;width:0;height:0;position:absolute}
@@ -289,193 +354,293 @@
     .mfoot{display:flex;gap:.4rem;justify-content:flex-end;margin-top:1.02rem}
     .emsg{font-family:'JetBrains Mono',monospace;font-size:.64rem;color:#e8464a;display:none;margin-top:.25rem}
 
-    /* empty */
     .empty{text-align:center;padding:2.8rem 1.5rem;color:var(--txt3)}
     .emph{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:rgba(234,176,32,.18);margin-bottom:.42rem}
     .empty p{font-family:'JetBrains Mono',monospace;font-size:.72rem}
 
-    /* toast */
     .toast{position:fixed;bottom:1.2rem;right:1.2rem;z-index:400;background:var(--card);backdrop-filter:blur(12px);border:1px solid var(--gold);border-radius:5px;padding:.53rem .86rem;font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--txt);display:flex;align-items:center;gap:.36rem;transform:translateY(50px);opacity:0;transition:all .25s cubic-bezier(.34,1.56,.64,1)}
     .toast.show{transform:translateY(0);opacity:1}
     .tdot{width:5px;height:5px;border-radius:50%;background:var(--gold)}
 
-    @media(max-width:900px){.aside-col{display:none}.layout{grid-template-columns:1fr}.brand-name{font-size:1.6rem}.srch-wrap{max-width:195px}}
+    @media(max-width:900px){.aside-col{display:none}.layout{grid-template-columns:1fr}.brand-name{font-size:1.6rem}.srch-wrap{max-width:195px}.land-hero{display:none}.land-auth{width:100%}}
     @media(max-width:600px){.mast,.snav,.feed-col{padding-left:.82rem;padding-right:.82rem}.mast-top{display:none}.uchip{display:none}}
   </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 </head>
 <body>
 <div class="bg"></div>
 <div class="bg-ov"></div>
 <div class="top-line"></div>
 
-<!-- MASTHEAD -->
-<div class="mast">
-  <div class="mast-top">
-    <span style="font-family:'Lora',serif;font-style:italic;font-size:.65rem">Kent State University · Est. 1910 · Kent, Ohio</span>
-    <div class="mast-top-r">
-      <span class="fp-chip">★ <span id="fp-n">0</span> Flash Points</span>
-      <button class="theme-btn" id="tbtn" title="Toggle light/dark">◐</button>
-    </div>
-  </div>
-  <div class="mast-main">
-    <div class="brand">
-      <div class="brand-name">
-        <span class="ks">Ks</span><span class="united">United</span>
-        <span class="brand-flash">⚡</span>
+<!-- ══════════════════════════════════════
+     LANDING PAGE
+══════════════════════════════════════ -->
+<div id="landing">
+  <div class="land-wrap">
+
+    <!-- Hero left -->
+    <div class="land-hero">
+      <div class="land-hero-content">
+        <div class="land-logo">
+          <span class="ks">Ks</span><span class="united">United</span><span class="land-flash"> ⚡</span>
+        </div>
+        <div class="land-tagline">By Flashes · For Flashes</div>
+        <div class="land-pills">
+          <span class="land-pill">Academic</span><span class="land-pill">Housing</span>
+          <span class="land-pill">Dining</span><span class="land-pill">FlashAI</span>
+          <span class="land-pill">Events</span><span class="land-pill">Clubs</span>
+        </div>
+        <div class="land-stats">
+          <div class="land-stat"><div class="land-stat-n">⚡</div><div class="land-stat-l">Kent State</div></div>
+          <div class="land-stat"><div class="land-stat-n">AI</div><div class="land-stat-l">Powered</div></div>
+          <div class="land-stat"><div class="land-stat-n">24/7</div><div class="land-stat-l">Community</div></div>
+        </div>
       </div>
-      <div class="brand-ksu">Kent State University</div>
-      <div class="brand-sub">By Flashes · For Flashes · <span id="hdr-date"></span></div>
     </div>
-    <div class="srch-wrap">
-      <svg class="srch-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input class="srch" id="srch" placeholder="Search posts, flairs, topics…"/>
-    </div>
-    <div class="mast-r">
-      <span class="uchip">signed in as <span class="un" id="hdr-u">guest</span></span>
-      <button class="btn btn-gh" id="btn-li">Log in</button>
-      <button class="btn btn-nv" id="btn-su">Sign up</button>
-      <button class="btn btn-gd" id="btn-ask">+ Ask</button>
+
+    <!-- Auth right -->
+    <div class="land-auth">
+      <div class="auth-tab-row">
+        <button class="auth-tab on" id="tab-li" onclick="switchTab('li')">Log In</button>
+        <button class="auth-tab" id="tab-su" onclick="switchTab('su')">Sign Up</button>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <div class="auth-form on" id="form-li">
+        <div class="auth-title">Welcome back, Flash</div>
+        <div class="auth-sub">KENT STATE UNIVERSITY · STUDENT PORTAL</div>
+        <div class="fg">
+          <label class="fl">Email</label>
+          <input class="fi" id="le" type="email" placeholder="you@kent.edu"/>
+        </div>
+        <div class="fg">
+          <label class="fl">Password</label>
+          <input class="fi" id="lp" type="password" placeholder="••••••••"/>
+        </div>
+        <button class="forgot-link" onclick="switchTab('fp')">Forgot password?</button>
+        <div class="auth-err" id="le-e"></div>
+        <button class="btn-full btn-gold" onclick="doLogin()">Log In</button>
+        <div class="divider"><span>or</span></div>
+        <button class="btn-full btn-ghost" onclick="switchTab('su')">Create an account</button>
+      </div>
+
+      <!-- SIGNUP FORM -->
+      <div class="auth-form" id="form-su">
+        <div class="auth-title">Join KsUnited ⚡</div>
+        <div class="auth-sub">YOUR KSU COMMUNITY STARTS HERE</div>
+        <div class="fg">
+          <label class="fl">KSU Email</label>
+          <input class="fi" id="se" type="email" placeholder="you@kent.edu"/>
+        </div>
+        <div class="fg">
+          <label class="fl">Display Name</label>
+          <input class="fi" id="sn" placeholder="FlashFan42"/>
+        </div>
+        <div class="fg">
+          <label class="fl">Password</label>
+          <input class="fi" id="sp" type="password" placeholder="••••••••"/>
+        </div>
+        <div class="fg">
+          <label class="fl">Year</label>
+          <select class="fs" id="sy">
+            <option>Freshman</option><option>Sophomore</option>
+            <option>Junior</option><option>Senior</option><option>Graduate</option>
+          </select>
+        </div>
+        <div class="auth-err" id="se-e"></div>
+        <button class="btn-full btn-gold" onclick="doSignup()">Create Account</button>
+        <div class="divider"><span>or</span></div>
+        <button class="btn-full btn-ghost" onclick="switchTab('li')">Already have an account</button>
+      </div>
+
+      <!-- FORGOT PASSWORD FORM -->
+      <div class="auth-form" id="form-fp">
+        <div class="auth-title">Reset Password</div>
+        <div class="auth-sub">ENTER YOUR EMAIL TO GET A RESET TOKEN</div>
+        <div class="fg">
+          <label class="fl">Email</label>
+          <input class="fi" id="fpe" type="email" placeholder="you@kent.edu"/>
+        </div>
+        <div class="auth-ok" id="fp-ok"></div>
+        <div class="auth-err" id="fp-e"></div>
+        <button class="btn-full btn-gold" onclick="doForgot()">Send Reset Token</button>
+        <div class="divider"><span>got your token?</span></div>
+
+        <!-- Reset with token -->
+        <div class="fg">
+          <label class="fl">Reset Token</label>
+          <input class="fi" id="fpt" placeholder="8-character token"/>
+        </div>
+        <div class="fg">
+          <label class="fl">New Password</label>
+          <input class="fi" id="fpp" type="password" placeholder="new password"/>
+        </div>
+        <div class="auth-ok" id="rp-ok"></div>
+        <div class="auth-err" id="rp-e"></div>
+        <button class="btn-full btn-gold" onclick="doReset()">Reset Password</button>
+        <div class="divider"><span></span></div>
+        <button class="btn-full btn-ghost" onclick="switchTab('li')">Back to Log In</button>
+      </div>
+
     </div>
   </div>
 </div>
 
-<!-- SECTION NAV -->
-<nav class="snav">
-  <button class="sb on" data-cat="all">All</button>
-  <button class="sb" data-cat="Academic">Academic</button>
-  <button class="sb" data-cat="Advising">Advising</button>
-  <button class="sb" data-cat="Dining">Dining</button>
-  <button class="sb" data-cat="Housing">Housing</button>
-  <button class="sb" data-cat="Health & Wellness">Health</button>
-  <button class="sb" data-cat="Tech Help">Tech</button>
-  <button class="sb" data-cat="Events">Events</button>
-  <button class="sb" data-cat="Clubs">Clubs</button>
-  <button class="sb" data-cat="Jobs & Co-ops">Jobs</button>
-  <button class="sb" data-cat="Tutoring">Tutoring</button>
-  <button class="sb" data-cat="Freshman Corner">Freshman</button>
-  <button class="sb" data-cat="Seniors Only">Seniors</button>
-  <button class="sb" data-cat="International">Intl</button>
-  <button class="sb" data-cat="Find Friends">Friends</button>
-  <button class="sb" data-cat="Campus Life">Campus</button>
-  <button class="sb" data-cat="Rant">Rant</button>
-  <div class="nav-end">
-    <button class="spill on" data-sort="newest">newest</button>
-    <button class="spill" data-sort="top">top</button>
-  </div>
-</nav>
+<!-- ══════════════════════════════════════
+     MAIN APP
+══════════════════════════════════════ -->
+<div id="app">
 
-<!-- LAYOUT -->
-<div class="layout">
-  <div class="feed-col"><div id="feed"></div></div>
-
-  <aside class="aside-col">
-
-    <!-- FlashAI -->
-    <div class="panel">
-      <div class="ph"><div class="porb">F</div><div class="ptitle">FlashAI</div><span class="pbadge">BEDROCK</span></div>
-      <div class="ai-fd" id="ai-fd">
-        <div class="aib sys">Ask me anything about KSU — dining, housing, tuition, classes, campus life…</div>
+  <!-- MASTHEAD -->
+  <div class="mast">
+    <div class="mast-top">
+      <span style="font-family:'Lora',serif;font-style:italic;font-size:.65rem">Kent State University · Est. 1910 · Kent, Ohio</span>
+      <div class="mast-top-r">
+        <span class="fp-chip">★ <span id="fp-n">0</span> Flash Points</span>
+        <button class="theme-btn" id="tbtn" title="Toggle light/dark">◐</button>
       </div>
-      <div class="ai-bar">
-        <input class="ai-in" id="ai-in" placeholder="Ask FlashAI…"/>
-        <button class="ai-go" id="ai-go">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-        </button>
-      </div>
-      <div class="powered">Powered by <span>FlashAI</span> · AWS Bedrock</div>
     </div>
-
-    <!-- Flash Corner — empty chat, real users join when they post -->
-    <div class="panel">
-      <div class="ph">
-        <div class="porb" style="background:transparent;border:1px solid var(--gold);color:var(--gold);font-size:.65rem">⚡</div>
-        <div class="ptitle">Flash Corner</div>
-        <span class="pbadge" style="color:#27c97a;border-color:rgba(39,201,122,.3);background:rgba(39,201,122,.08)">OPEN</span>
-      </div>
-      <div class="fc-wrap">
-        <div class="fc-tag">community chat · anyone can join</div>
-        <div class="fc-msgs" id="fc-msgs">
-          <div class="fc-empty">No one here yet — say hi and start the conversation! 👋</div>
+    <div class="mast-main">
+      <div class="brand">
+        <div class="brand-name">
+          <span class="ks">Ks</span><span class="united">United</span>
+          <span class="brand-flash">⚡</span>
         </div>
-        <div class="fc-irow">
-          <input class="fc-inp" id="fc-inp" placeholder="Say hi to fellow Flashes…"/>
-          <button class="fc-send" id="fc-send">
+        <div class="brand-ksu">Kent State University</div>
+        <div class="brand-sub">By Flashes · For Flashes · <span id="hdr-date"></span></div>
+      </div>
+      <div class="srch-wrap">
+        <svg class="srch-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="srch" id="srch" placeholder="Search posts, flairs, topics…"/>
+      </div>
+      <div class="mast-r">
+        <span class="uchip">signed in as <span class="un" id="hdr-u">guest</span></span>
+        <button class="btn btn-gd" id="btn-ask">+ Ask</button>
+        <button class="btn btn-gh" id="btn-admin" style="display:none" onclick="window.location='/admin'">⚙ Admin</button>
+        <button class="btn btn-gh" id="btn-lo" onclick="doLogout()">Log out</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION NAV -->
+  <nav class="snav">
+    <button class="sb on" data-cat="all">All</button>
+    <button class="sb" data-cat="Academic">Academic</button>
+    <button class="sb" data-cat="Advising">Advising</button>
+    <button class="sb" data-cat="Dining">Dining</button>
+    <button class="sb" data-cat="Housing">Housing</button>
+    <button class="sb" data-cat="Health & Wellness">Health</button>
+    <button class="sb" data-cat="Tech Help">Tech</button>
+    <button class="sb" data-cat="Events">Events</button>
+    <button class="sb" data-cat="Clubs">Clubs</button>
+    <button class="sb" data-cat="Jobs & Co-ops">Jobs</button>
+    <button class="sb" data-cat="Tutoring">Tutoring</button>
+    <button class="sb" data-cat="Freshman Corner">Freshman</button>
+    <button class="sb" data-cat="Seniors Only">Seniors</button>
+    <button class="sb" data-cat="International">Intl</button>
+    <button class="sb" data-cat="Find Friends">Friends</button>
+    <button class="sb" data-cat="Campus Life">Campus</button>
+    <button class="sb" data-cat="Rant">Rant</button>
+    <div class="nav-end">
+      <button class="spill on" data-sort="newest">newest</button>
+      <button class="spill" data-sort="top">top</button>
+    </div>
+  </nav>
+
+  <!-- LAYOUT -->
+  <div class="layout">
+    <div class="feed-col"><div id="feed"></div></div>
+    <aside class="aside-col">
+
+      <!-- FlashAI -->
+      <div class="panel">
+        <div class="ph"><div class="porb">F</div><div class="ptitle">FlashAI</div><span class="pbadge">BEDROCK</span></div>
+        <div class="ai-fd" id="ai-fd">
+          <div class="aib sys">Ask me anything about KSU — dining, housing, tuition, classes, campus life…</div>
+        </div>
+        <div class="ai-bar">
+          <input class="ai-in" id="ai-in" placeholder="Ask FlashAI…"/>
+          <button class="ai-go" id="ai-go">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           </button>
         </div>
+        <div class="powered">Powered by <span>FlashAI</span> · AWS Bedrock</div>
+      </div>
+
+      <!-- Flash Corner -->
+      <div class="panel">
+        <div class="ph">
+          <div class="porb" style="background:transparent;border:1px solid var(--gold);color:var(--gold);font-size:.65rem">⚡</div>
+          <div class="ptitle">Flash Corner</div>
+          <span class="pbadge" style="color:#27c97a;border-color:rgba(39,201,122,.3);background:rgba(39,201,122,.08)">OPEN</span>
+        </div>
+        <div class="fc-wrap">
+          <div class="fc-tag">community chat · anyone can join</div>
+          <div class="fc-msgs" id="fc-msgs">
+            <div class="fc-empty">No one here yet — say hi! 👋</div>
+          </div>
+          <div class="fc-irow">
+            <input class="fc-inp" id="fc-inp" placeholder="Say hi to fellow Flashes…"/>
+            <button class="fc-send" id="fc-send">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Flash Score Leaderboard -->
+      <div class="panel">
+        <div class="ph">
+          <div class="porb" style="background:transparent;border:1px solid var(--gold);color:var(--gold)">★</div>
+          <div class="ptitle">Flash Score</div>
+          <span class="pbadge">DATA SCIENCE</span>
+        </div>
+        <div style="padding:.5rem .7rem .3rem;border-bottom:1px solid var(--bdr)">
+          <canvas id="lb-chart" height="140"></canvas>
+        </div>
+        <div class="lb-body" id="lb"></div>
+        <div style="padding:.3rem .75rem .5rem;font-family:'JetBrains Mono',monospace;font-size:.5rem;color:var(--txt3);line-height:1.6">
+          score = (upvotes×3) + (posts×2) + (replies×1) + sentiment<br>normalized 0–100
+        </div>
+      </div>
+
+      <!-- Trending -->
+      <div class="panel">
+        <div class="ph"><div class="ptitle">Top Stories</div></div>
+        <div class="tr-body" id="trend"></div>
+      </div>
+
+    </aside>
+  </div>
+
+  <!-- POST MODAL -->
+  <div class="overlay" id="pm">
+    <div class="modal">
+      <div class="mtitle">Post a Question</div>
+      <div class="fg2"><label class="fl">Your question</label>
+        <textarea class="fa" id="pc" placeholder="What's on your mind? Ctrl+Enter to post."></textarea></div>
+      <div class="ibox green" id="db"><span class="ilbl">Similar post found</span><span class="itxt" id="dt"></span></div>
+      <div class="fg2"><label class="fl">Flair</label>
+        <select class="fs2" id="pcat">
+          <option>Academic</option><option>Advising</option><option>Dining</option>
+          <option>Housing</option><option>Health & Wellness</option><option>Tech Help</option>
+          <option>Events</option><option>Clubs</option><option>Jobs & Co-ops</option>
+          <option>Tutoring</option><option>Freshman Corner</option><option>Seniors Only</option>
+          <option>International</option><option>Find Friends</option><option>Campus Life</option>
+          <option>Accessibility</option><option>Rant</option>
+        </select></div>
+      <div class="togr">
+        <label class="tog"><input type="checkbox" id="pa" checked/><span class="togt"></span></label>
+        <span class="togl">post anonymously</span>
+      </div>
+      <div class="mfoot">
+        <button class="btn btn-gh" id="pc-x">cancel</button>
+        <button class="btn btn-gd" id="pc-ok">Publish</button>
       </div>
     </div>
-
-    <!-- Flash Points Leaderboard -->
-    <div class="panel">
-      <div class="ph">
-        <div class="porb" style="background:transparent;border:1px solid var(--gold);color:var(--gold)">★</div>
-        <div class="ptitle">Flash Points</div>
-        <span class="pbadge">TOP FLASHES</span>
-      </div>
-      <div class="lb-body" id="lb"></div>
-    </div>
-
-    <!-- Trending -->
-    <div class="panel">
-      <div class="ph"><div class="ptitle">Top Stories</div></div>
-      <div class="tr-body" id="trend"></div>
-    </div>
-
-  </aside>
-</div>
-
-<!-- POST MODAL -->
-<div class="overlay" id="pm">
-  <div class="modal">
-    <div class="mtitle">Post a Question</div>
-    <div class="fg"><label class="fl">Your question</label>
-      <textarea class="fa" id="pc" placeholder="What's on your mind? Ctrl+Enter to post."></textarea></div>
-    <div class="ibox green" id="db"><span class="ilbl">Similar post found</span><span class="itxt" id="dt"></span></div>
-    <div class="fg"><label class="fl">Flair</label>
-      <select class="fs" id="pcat">
-        <option>Academic</option><option>Advising</option><option>Dining</option>
-        <option>Housing</option><option>Health & Wellness</option><option>Tech Help</option>
-        <option>Events</option><option>Clubs</option><option>Jobs & Co-ops</option>
-        <option>Tutoring</option><option>Freshman Corner</option><option>Seniors Only</option>
-        <option>International</option><option>Find Friends</option><option>Campus Life</option>
-        <option>Accessibility</option><option>Rant</option>
-      </select></div>
-    <div class="togr">
-      <label class="tog"><input type="checkbox" id="pa" checked/><span class="togt"></span></label>
-      <span class="togl">post anonymously</span>
-    </div>
-    <div class="mfoot">
-      <button class="btn btn-gh" id="pc-x">cancel</button>
-      <button class="btn btn-gd" id="pc-ok">Publish</button>
-    </div>
   </div>
-</div>
 
-<!-- LOGIN -->
-<div class="overlay" id="lm">
-  <div class="modal" style="max-width:365px">
-    <div class="mtitle">Log In</div>
-    <div class="fg"><label class="fl">Email</label><input class="fi" id="le" type="email" placeholder="you@kent.edu"/></div>
-    <div class="fg"><label class="fl">Password</label><input class="fi" id="lp" type="password" placeholder="••••••••"/></div>
-    <div class="emsg" id="le-e"></div>
-    <div class="mfoot"><button class="btn btn-gh" id="lm-x">cancel</button><button class="btn btn-gd" id="lm-ok">Log In</button></div>
-  </div>
-</div>
-
-<!-- SIGNUP -->
-<div class="overlay" id="sm">
-  <div class="modal" style="max-width:385px">
-    <div class="mtitle">Join KsUnited ⚡</div>
-    <div class="fg"><label class="fl">KSU Email</label><input class="fi" id="se" type="email" placeholder="you@kent.edu"/></div>
-    <div class="fg"><label class="fl">Display Name</label><input class="fi" id="sn" placeholder="FlashFan42"/></div>
-    <div class="fg"><label class="fl">Password</label><input class="fi" id="sp" type="password" placeholder="••••••••"/></div>
-    <div class="fg"><label class="fl">Year</label>
-      <select class="fs" id="sy"><option>Freshman</option><option>Sophomore</option><option>Junior</option><option>Senior</option><option>Graduate</option></select></div>
-    <div class="emsg" id="se-e"></div>
-    <div class="mfoot"><button class="btn btn-gh" id="sm-x">cancel</button><button class="btn btn-gd" id="sm-ok">Create Account</button></div>
-  </div>
-</div>
+</div><!-- /#app -->
 
 <div class="toast" id="toast"><span class="tdot"></span><span id="tmsg">done!</span></div>
 
@@ -513,67 +678,143 @@ function addFP(n,lbl){
   fp+=n;localStorage.setItem('fp',fp);$('fp-n').textContent=fp;
   toast('+'+n+' Flash Points — '+lbl+' ★','var(--gold)');updateLB();
 }
-function updateLB(){
-  const all=JSON.parse(localStorage.getItem('lb')||'[]');
-  if(me&&me.username){
-    const i=all.findIndex(x=>x.n===me.username);
-    if(i>=0)all[i].p=fp;else all.push({n:me.username,p:fp});
-    all.sort((a,b)=>b.p-a.p);localStorage.setItem('lb',JSON.stringify(all.slice(0,10)));
-  }
-  const lb=$('lb');const data=JSON.parse(localStorage.getItem('lb')||'[]');
-  if(!data.length){lb.innerHTML='<div style="font-family:\'JetBrains Mono\',monospace;font-size:.67rem;color:var(--txt3);padding:.58rem .76rem">post questions to earn points!</div>';return;}
-  const rc=['g','s','b'];
-  lb.innerHTML=data.slice(0,5).map((x,i)=>`<div class="lbi"><span class="lbr ${rc[i]||''}">${i+1}</span><span class="lbn">${esc(x.n)}</span><span class="lbp">${x.p}pts</span></div>`).join('');
+let lbChart=null;
+async function updateLB(){
+  try{
+    const r=await fetch('/leaderboard');
+    const data=await r.json();
+    const lb=$('lb');
+    if(!data.length){
+      lb.innerHTML='<div style="font-family:JetBrains Mono,monospace;font-size:.67rem;color:var(--txt3);padding:.58rem .76rem">Be the first Flash to post!</div>';
+      return;
+    }
+    const medals=['g','s','b'];
+    lb.innerHTML=data.slice(0,5).map((u,i)=>{
+      const badge=u.sentiment_bonus>0?'<span style="font-size:.5rem;color:#27c97a"> +vibe</span>':u.sentiment_bonus<0?'<span style="font-size:.5rem;color:#e8464a"> -vibe</span>':'';
+      return `<div class="lbi"><span class="lbr ${medals[i]||''}">${i+1}</span><span class="lbn">${esc(u.username)}${badge}</span><span class="lbp">${u.flash_score}</span></div>`;
+    }).join('');
+    const ctx=$('lb-chart');
+    if(!ctx)return;
+    const labels=data.map(u=>u.username.length>8?u.username.slice(0,8)+'...':u.username);
+    const scores=data.map(u=>u.flash_score);
+    const colors=data.map((_,i)=>i===0?'rgba(234,176,32,.9)':i===1?'rgba(180,180,180,.7)':i===2?'rgba(180,100,30,.7)':'rgba(234,176,32,.35)');
+    if(lbChart)lbChart.destroy();
+    lbChart=new Chart(ctx,{
+      type:'bar',
+      data:{labels,datasets:[{data:scores,backgroundColor:colors,borderRadius:4,borderSkipped:false}]},
+      options:{
+        responsive:true,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'Flash Score: '+c.raw}}},
+        scales:{
+          x:{ticks:{color:'rgba(238,242,248,.4)',font:{family:'JetBrains Mono',size:9}},grid:{display:false}},
+          y:{ticks:{color:'rgba(238,242,248,.3)',font:{size:9}},grid:{color:'rgba(234,176,32,.07)'},max:100,min:0}
+        }
+      }
+    });
+  }catch(e){console.error('LB error',e);}
 }
 
-// date
 function setDate(){
   const d=new Date();
   const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   $('hdr-date').textContent=days[d.getDay()]+', '+months[d.getMonth()]+' '+d.getDate()+', '+d.getFullYear();
 }
-setDate();$('fp-n').textContent=fp;updateLB();
 
-// theme — NO flashing in light mode, just smooth transition
 $('tbtn').addEventListener('click',()=>{
   const h=document.documentElement;
   h.setAttribute('data-theme',h.getAttribute('data-theme')==='dark'?'light':'dark');
 });
 
-// ── AUTH ──
-async function checkAuth(){
-  try{const r=await fetch('/me');const d=await r.json();
-    if(d.logged_in){me=d;$('hdr-u').textContent=d.username;$('btn-li').style.display='none';$('btn-su').style.display='none';}}
-  catch(e){}
+// ── LANDING / AUTH ──
+function switchTab(tab){
+  ['li','su','fp'].forEach(t=>{
+    $('tab-'+t)&&$('tab-'+t).classList.toggle('on',t===tab);
+    $('form-'+t).classList.toggle('on',t===tab);
+  });
+  // hide errors when switching
+  ['le-e','se-e','fp-ok','fp-e','rp-ok','rp-e'].forEach(id=>{if($(id))$(id).style.display='none';});
 }
-$('btn-li').addEventListener('click',()=>$('lm').classList.add('open'));
-$('lm-x').addEventListener('click',()=>$('lm').classList.remove('open'));
-$('lm-ok').addEventListener('click',async()=>{
-  const err=$('le-e');err.style.display='none';
-  try{const r=await fetch('/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:$('le').value.trim(),password:$('lp').value})});
-    const d=await r.json();
-    if(d.success){me=d;$('hdr-u').textContent=d.username;$('btn-li').style.display='none';$('btn-su').style.display='none';$('lm').classList.remove('open');addFP(50,'logged in!');}
-    else{err.textContent=d.error;err.style.display='block';}}
-  catch(e){err.textContent='Something went wrong';err.style.display='block';}
-});
-$('btn-su').addEventListener('click',()=>$('sm').classList.add('open'));
-$('sm-x').addEventListener('click',()=>$('sm').classList.remove('open'));
-$('sm-ok').addEventListener('click',async()=>{
-  const err=$('se-e');err.style.display='none';
-  try{const r=await fetch('/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:$('se').value.trim(),username:$('sn').value.trim(),password:$('sp').value,year:$('sy').value})});
-    const d=await r.json();
-    if(d.success){me=d;$('hdr-u').textContent=d.username;$('btn-li').style.display='none';$('btn-su').style.display='none';$('sm').classList.remove('open');addFP(100,'joined KsUnited!');}
-    else{err.textContent=d.error;err.style.display='block';}}
-  catch(e){err.textContent='Something went wrong';err.style.display='block';}
-});
 
-// search
-$('srch').addEventListener('input',()=>{srchQ=$('srch').value.trim().toLowerCase();render(filtered());});
+function showErr(id,msg){const el=$(id);el.textContent=msg;el.style.display='block';}
+function showOk(id,msg){const el=$(id);el.textContent=msg;el.style.display='block';}
+
+async function doLogin(){
+  $('le-e').style.display='none';
+  try{
+    const r=await fetch('/login',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email:$('le').value.trim(),password:$('lp').value})});
+    const d=await r.json();
+    if(d.success){
+      me=d;
+      enterApp(d.username, d.is_admin);
+    } else showErr('le-e',d.error);
+  }catch(e){showErr('le-e','Something went wrong');}
+}
+
+async function doSignup(){
+  $('se-e').style.display='none';
+  try{
+    const r=await fetch('/signup',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email:$('se').value.trim(),username:$('sn').value.trim(),password:$('sp').value,year:$('sy').value})});
+    const d=await r.json();
+    if(d.success){
+      me=d;
+      enterApp(d.username, false);
+      addFP(100,'joined KsUnited!');
+    } else showErr('se-e',d.error);
+  }catch(e){showErr('se-e','Something went wrong');}
+}
+
+async function doForgot(){
+  $('fp-ok').style.display='none';$('fp-e').style.display='none';
+  const email=$('fpe').value.trim();
+  if(!email){showErr('fp-e','Enter your email');return;}
+  try{
+    const r=await fetch('/forgot-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+    const d=await r.json();
+    if(d.token){
+      showOk('fp-ok',`Your reset token: ${d.token} (copy it above!)`);
+      $('fpt').value=d.token;
+    } else {
+      showOk('fp-ok',d.message);
+    }
+  }catch(e){showErr('fp-e','Something went wrong');}
+}
+
+async function doReset(){
+  $('rp-ok').style.display='none';$('rp-e').style.display='none';
+  const email=$('fpe').value.trim(),token=$('fpt').value.trim(),password=$('fpp').value;
+  if(!email||!token||!password){showErr('rp-e','Fill all fields');return;}
+  try{
+    const r=await fetch('/reset-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,token,password})});
+    const d=await r.json();
+    if(d.success){showOk('rp-ok','Password reset! Logging you in…');setTimeout(()=>switchTab('li'),1500);}
+    else showErr('rp-e',d.error);
+  }catch(e){showErr('rp-e','Something went wrong');}
+}
+
+function enterApp(username, isAdmin){
+  $('hdr-u').textContent=username;
+  $('landing').classList.add('hidden');
+  setTimeout(()=>{$('landing').style.display='none';},400);
+  $('app').classList.add('show');
+  if(isAdmin)$('btn-admin').style.display='';
+  setDate();updateLB();$('fp-n').textContent=fp;
+  load();
+}
+
+async function doLogout(){
+  await fetch('/logout',{method:'POST'});
+  me=null;
+  $('app').classList.remove('show');
+  $('landing').style.display='flex';
+  setTimeout(()=>$('landing').classList.remove('hidden'),10);
+}
 
 // ── POSTS ──
 async function load(){
-  try{const r=await fetch('/posts');posts=await r.json();render(filtered());updateTrend();updateMood();updateLB();}
+  try{const r=await fetch('/posts');posts=await r.json();render(filtered());updateTrend();updateLB();}
   catch(e){posts=[];render([]);}
 }
 function filtered(){
@@ -591,14 +832,20 @@ function render(list){
   f.querySelectorAll('.tlb').forEach(b=>b.addEventListener('click',()=>tldr(+b.dataset.id)));
   f.querySelectorAll('.aibtn').forEach(b=>b.addEventListener('click',()=>askAI('Help with: "'+b.dataset.q+'"')));
   f.querySelectorAll('.rsb').forEach(b=>b.addEventListener('click',()=>sendRep(+b.dataset.id)));
-  // Enter key for replies
+  f.querySelectorAll('.delbtn').forEach(b=>b.addEventListener('click',()=>deletePost(+b.dataset.id)));
   f.querySelectorAll('.r-inp').forEach(inp=>{
     inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendRep(+inp.dataset.id);}});
   });
 }
+
 function card(p){
   const uv=(JSON.parse(localStorage.getItem('uv')||'[]')).includes(p.id);
   const au=p.anonymous?'Anonymous':(p.username||'Anonymous');
+  const myId = me && (me.user_id || me.id); const isOwner = me && (String(p.user_id)===String(myId) || me.is_admin);
+  const delBtn = isOwner
+    ? `<button class="act del-act delbtn" data-id="${p.id}" title="Delete post">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+       </button>` : '';
   return `<div class="post-card" id="pc-${p.id}">
     <div class="ptop"><span class="flair ${fcls(p.category)}">${esc(p.category)}</span><span class="pmeta">by <strong>${esc(au)}</strong></span><span class="ptime">${ago(p.created_at)}</span></div>
     <div class="pbody">${esc(p.content)}</div>
@@ -611,6 +858,7 @@ function card(p){
       <button class="act rtb" data-id="${p.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg><span class="rl">replies</span></button>
       <button class="act tlb" data-id="${p.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>tl;dr</button>
       <button class="act aibtn" data-q="${esc(p.content).slice(0,100)}">ask AI</button>
+      ${delBtn}
     </div>
     <div class="thread" id="th-${p.id}">
       <div class="rw" id="rw-${p.id}"></div>
@@ -621,6 +869,20 @@ function card(p){
     </div>
   </div>`;
 }
+
+async function deletePost(id){
+  if(!confirm('Delete this post?'))return;
+  try{
+    const r=await fetch('/post/'+id,{method:'DELETE'});
+    const d=await r.json();
+    if(d.success){
+      posts=posts.filter(p=>p.id!==id);
+      render(filtered());
+      toast('Post deleted','#e8464a');
+    } else toast(d.error||'Cannot delete');
+  }catch(e){toast('Error deleting post');}
+}
+
 async function upvote(id){
   const uv=JSON.parse(localStorage.getItem('uv')||'[]');if(uv.includes(id))return;
   await fetch('/upvote/'+id,{method:'POST'});
@@ -645,7 +907,7 @@ async function loadReps(id){
       <span class="r-name"><strong>${r.anonymous?'Anonymous':esc(r.username)}</strong></span>
       <span class="r-time">${ago(r.created_at)}</span></div>
       <div class="r-txt">${parseMentions(r.content)}</div></div>`).join('');}
-  catch(e){w.innerHTML='<div style="font-family:\'JetBrains Mono\',monospace;font-size:.64rem;color:var(--txt3);padding:.28rem 0 .28rem 8px">could not load</div>';}
+  catch(e){}
 }
 async function sendRep(id){
   const inp=$('ri-'+id),content=inp.value.trim();if(!content)return;
@@ -681,7 +943,7 @@ async function tldr(id){
   catch(e){txt.textContent='could not summarize';}
 }
 
-// AI — updated system prompt with real KSU facts
+// AI
 function addAImsg(t,c){const b=$('ai-fd'),el=document.createElement('div');el.className='aib '+c;el.textContent=t;b.appendChild(el);b.scrollTop=b.scrollHeight;}
 function showDots(){const b=$('ai-fd'),el=document.createElement('div');el.className='dots';el.innerHTML='<span></span><span></span><span></span>';b.appendChild(el);b.scrollTop=b.scrollHeight;return el;}
 async function askAI(q){
@@ -689,18 +951,15 @@ async function askAI(q){
   $('ai-in').value='';addAImsg(q,'usr');const d=showDots();
   try{const r=await fetch('/ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q})});
     d.remove();const data=await r.json();addAImsg(data.answer||'No answer.','bot');}
-  catch(e){d.remove();addAImsg('FlashAI is offline.','sys');}
+  catch(e){d.remove();addAImsg('Error: '+e.message,'sys');}
 }
 $('ai-go').addEventListener('click',()=>askAI($('ai-in').value.trim()));
 $('ai-in').addEventListener('keydown',e=>{if(e.key==='Enter')askAI($('ai-in').value.trim());});
 
-// ── FLASH CORNER (empty chat — real students join when they type) ──
+// Flash Corner
 function renderFC(){
   const box=$('fc-msgs');
-  if(!fcMsgs.length){
-    box.innerHTML='<div class="fc-empty">No one here yet — say hi and start the conversation! 👋</div>';
-    return;
-  }
+  if(!fcMsgs.length){box.innerHTML='<div class="fc-empty">No one here yet — say hi! 👋</div>';return;}
   box.innerHTML=fcMsgs.map(m=>`
     <div class="fc-msg ${m.mine?'mine':''}">
       <div class="fc-av">${m.from[0].toUpperCase()}</div>
@@ -723,26 +982,39 @@ renderFC();
 document.querySelectorAll('.sb').forEach(b=>{b.addEventListener('click',()=>{document.querySelectorAll('.sb').forEach(x=>x.classList.remove('on'));b.classList.add('on');activeCat=b.dataset.cat;render(filtered());});});
 document.querySelectorAll('.spill').forEach(b=>{b.addEventListener('click',()=>{document.querySelectorAll('.spill').forEach(x=>x.classList.remove('on'));b.classList.add('on');sortMode=b.dataset.sort;render(filtered());});});
 
-// trending + mood
+// search
+$('srch').addEventListener('input',()=>{srchQ=$('srch').value.trim().toLowerCase();render(filtered());});
+
+// trending
 function updateTrend(){
   const top=[...posts].sort((a,b)=>b.upvotes-a.upvotes).slice(0,5);
   const el=$('trend');
   if(!top.length){el.innerHTML='<div style="font-family:\'JetBrains Mono\',monospace;font-size:.7rem;color:var(--txt3);padding:.78rem">no trending yet</div>';return;}
   el.innerHTML=top.map((p,i)=>`<div class="tri" onclick="gp(${p.id})"><span class="trn">${i+1}</span><span class="trt">${esc(p.content.slice(0,50))}${p.content.length>50?'…':''}</span><span class="tru">+${p.upvotes}</span></div>`).join('');
 }
-function updateMood(){
-  if(!posts.length)return;
-  const s=posts.map(p=>p.sentiment||'neutral'),n=s.length;
-  const pos=s.filter(x=>x==='positive').length,neg=s.filter(x=>x==='negative').length,neu=n-pos-neg;
-  const mp=$('mp'),mn=$('mn'),mg=$('mg');
-  if(mp)mp.style.width=Math.round(pos/n*100)+'%';
-  if(mn)mn.style.width=Math.round(neu/n*100)+'%';
-  if(mg)mg.style.width=Math.round(neg/n*100)+'%';
-}
 window.gp=id=>{const el=$('pc-'+id);if(el)el.scrollIntoView({behavior:'smooth',block:'center'});};
-['pm','lm','sm'].forEach(id=>{$(id).addEventListener('click',e=>{if(e.target===$(id))$(id).classList.remove('open');});});
+$('pm').addEventListener('click',e=>{if(e.target===$('pm'))$('pm').classList.remove('open');});
 
-checkAuth();load();setInterval(load,30000);
+// Enter key login/signup
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){
+    const f=document.querySelector('.auth-form.on');
+    if(!f)return;
+    const id=f.id;
+    if(id==='form-li')doLogin();
+    else if(id==='form-su')doSignup();
+  }
+});
+
+// check if already logged in
+(async()=>{
+  try{
+    const r=await fetch('/me');const d=await r.json();
+    if(d.logged_in){me=d;enterApp(d.username,d.is_admin);}
+  }catch(e){}
+})();
+
+setInterval(()=>{if(me)load();},30000);
 </script>
 </body>
 </html>

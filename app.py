@@ -1,319 +1,460 @@
 # ============================================
-# KSUnited - Backend
-# This is the "brain" of the app
-# It handles users, posts, replies, and AI
-# Run it with: python app.py
+# KsUnited - Backend
+# AWS Bedrock Bearer Token authentication
+# Model: anthropic.claude-3-haiku-20240307-v1:0
 # ============================================
 
-
-# ---- IMPORTS (tools we need) ----
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, redirect, url_for
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import os
 import json
-import boto3
+import requests
+import secrets
+import string
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
+# ---- Load .env file ----
+def load_env():
+    env_path = os.path.join(os.path.dirname(__file__), '.env')
+    if os.path.exists(env_path):
+        with open(env_path) as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    key, _, val = line.partition('=')
+                    os.environ.setdefault(key.strip(), val.strip())
 
-# ---- APP SETUP ----
+load_env()
+
 app = Flask(__name__)
-app.secret_key = 'ksu-united-secret-2024'  # keeps user sessions secure
-DATABASE = 'ksunited.db'                    # our database file name
-
+app.secret_key = 'ksu-united-secret-2024'
+DATABASE = 'ksunited.db'
 
 # ---- LOGIN MANAGER ----
-# this tracks who is logged in across all pages
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+# ---- AWS BEDROCK SETTINGS ----
+BEDROCK_TOKEN  = os.environ.get('AWS_BEARER_TOKEN_BEDROCK', '')
+BEDROCK_REGION = 'us-east-1'
+BEDROCK_URL    = f'https://bedrock-runtime.{BEDROCK_REGION}.amazonaws.com'
+MODEL_ID       = 'anthropic.claude-3-haiku-20240307-v1:0'
 
-# ---- AWS BEDROCK (the AI) ----
-# connects to Amazon's AI service so FlashAI can answer questions
-# AWS keys will come from the .env file we set up later
-bedrock = boto3.client(
-    service_name='bedrock-runtime',
-    region_name=os.environ.get('AWS_DEFAULT_REGION', 'us-east-1')
-)
+# ---- ADMIN CREDENTIALS ----
+ADMIN_EMAIL    = 'admin@ksunited.edu'
+ADMIN_PASSWORD = 'KSUAdmin2024!'
+
+# ---- MAIL SETTINGS ----
+MAIL_EMAIL    = os.environ.get('MAIL_EMAIL', '')
+MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD', '')
+
+def send_reset_email(to_email, token):
+    if not MAIL_EMAIL or not MAIL_PASSWORD:
+        print(f'[MAIL] No credentials — token for {to_email}: {token}')
+        return False
+    try:
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = 'KsUnited ⚡ Password Reset'
+        msg['From']    = MAIL_EMAIL
+        msg['To']      = to_email
+        html = f"""
+        <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:2rem;background:#07101e;color:#eef2f8;border-radius:10px">
+          <h2 style="color:#EAB020;margin-bottom:.5rem">KsUnited ⚡</h2>
+          <p style="color:#aab;margin-bottom:1.5rem">Password reset request received.</p>
+          <div style="background:#0d1e36;border:1px solid rgba(234,176,32,.3);border-radius:8px;padding:1.2rem;text-align:center;margin-bottom:1.5rem">
+            <div style="font-size:.75rem;color:#888;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.5rem">Your Reset Token</div>
+            <div style="font-size:2rem;font-weight:700;color:#EAB020;letter-spacing:.2em">{token}</div>
+          </div>
+          <p style="color:#888;font-size:.85rem">Enter this token on the reset page. It expires after use.</p>
+          <p style="color:#555;font-size:.75rem;margin-top:1rem">If you didn't request this, ignore this email.</p>
+        </div>
+        """
+        msg.attach(MIMEText(html, 'html'))
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+            server.login(MAIL_EMAIL, MAIL_PASSWORD)
+            server.sendmail(MAIL_EMAIL, to_email, msg.as_string())
+        print(f'[MAIL] Reset email sent to {to_email}')
+        return True
+    except Exception as e:
+        print(f'[MAIL] Failed to send email: {e}')
+        return False
+
+print(f"Bedrock token loaded: {'YES ✓' if BEDROCK_TOKEN else 'NO ✗ — check your .env file'}")
 
 
-# ---- ALL VALID FLAIRS ----
-# these are the tags students pick when posting
-# based on real KSU services and what students actually need
+def call_bedrock(messages, system_prompt='', max_tokens=512):
+    """Call AWS Bedrock using Bearer token. Returns text or None."""
+    if not BEDROCK_TOKEN:
+        return None
+    url = f'{BEDROCK_URL}/model/{MODEL_ID}/invoke'
+    headers = {
+        'Content-Type':  'application/json',
+        'Authorization': f'Bearer {BEDROCK_TOKEN}',
+    }
+    body = {
+        'anthropic_version': 'bedrock-2023-05-31',
+        'max_tokens': max_tokens,
+        'messages': messages,
+    }
+    if system_prompt:
+        body['system'] = system_prompt
+    try:
+        resp = requests.post(url, headers=headers, json=body, timeout=30)
+        print(f'Bedrock status: {resp.status_code}')
+        if resp.status_code != 200:
+            print(f'Bedrock error: {resp.text[:300]}')
+        resp.raise_for_status()
+        return resp.json()['content'][0]['text']
+    except Exception as e:
+        print(f'Bedrock error: {e}')
+        return None
+
+
+# ---- FLAIRS ----
 FLAIRS = [
-    'Academic',         # classes, exams, grades, professors
-    'Advising',         # KSU Navigate, degree planning, advisor questions
-    'Dining',           # Prentice Cafe, The Hub, Side by Side, meal plans
-    'Housing',          # Tri-Towers, Centennial Court, Verder, off-campus
-    'Health & Wellness',# DeWeese Health Center, CARES Center, counseling
-    'Tech Help',        # Canvas, FlashLine, WiFi, KSU TechHelp 330-672-HELP
-    'Events',           # campus events, activities, things to do
-    'Clubs',            # student organizations, joining clubs
-    'Jobs & Co-ops',    # internships, part-time jobs, Career Center
-    'Tutoring',         # Academic Success Center, find tutors, study help
-    'Freshman Corner',  # new students, orientation, first year questions
-    'Seniors Only',     # graduation, senior week, job hunting
-    'International',    # ISO office, visa questions, intl student life
-    'Find Friends',     # meet people, study groups, hang out
-    'Campus Life',      # share pics, campus moments, KSU vibes
-    'Accessibility',    # SAS, disability services, accommodations
-    'Rant',             # just need to vent? this is the place
+    'Academic', 'Advising', 'Dining', 'Housing',
+    'Health & Wellness', 'Tech Help', 'Events', 'Clubs',
+    'Jobs & Co-ops', 'Tutoring', 'Freshman Corner', 'Seniors Only',
+    'International', 'Find Friends', 'Campus Life', 'Accessibility', 'Rant',
 ]
 
+# ---- FLASHAI SYSTEM PROMPT ----
+KSU_SYSTEM_PROMPT = """You are FlashAI, the friendly AI assistant for KsUnited —
+the student Q&A community for Kent State University.
+
+You talk like a helpful KSU senior who knows everything about campus.
+Start responses with "Hey Flash!" occasionally. Be warm, helpful, and concise.
+Always include a relevant kent.edu link when you know one.
+
+FACTS YOU KNOW:
+TUITION
+- Ohio resident: ~$13,850/year
+- Non-resident: ~$24,300/year
+- More info: kent.edu/fbe-center/tuition-and-other-costs
+
+HOUSING (kent.edu/housing)
+- 6,200 students live on campus
+- Freshmen and sophomores required to live on campus
+- Dorms: Centennial Court, Tri-Towers, Eastway, Verder, Prentice, Lake, Olson
+- Eastway Center: most popular for freshmen, dining on-site, all-you-can-eat
+- Centennial Court: great option, own bathroom cleaned weekly
+- Double room: ~$4,345/semester
+
+DINING (kent.edu/dining)
+- Eastway Market: all-you-can-eat swipe dining, open for breakfast/lunch/dinner
+- Prentice Cafe, The Hub, Side by Side also available
+- Meal plans required for on-campus students
+
+HEALTH
+- DeWeese Health Center: kent.edu/health
+- Counseling services available on campus
+- CARES Center for food/housing insecurity needs
+- Student Accessibility Services: kent.edu/sas
+
+TECH HELP
+- TechHelp: 330-672-HELP available 24/7
+- Canvas help: available inside Canvas > Help menu
+- FlashLine portal: flashline.kent.edu
+
+ADVISING
+- KSU Navigate: navigate.kent.edu
+- Add/drop classes through FlashLine
+
+CAREER
+- Career Exploration and Development: kent.edu/career
+- Co-ops and internships available
+
+CAMPUS LIFE
+- 86% of students feel safe on campus
+- Active Greek life, clubs, intramural sports
+- Kent State Athletics: kent.edu/athletics
+
+If you do not know something specific, be honest and direct them to kent.edu.
+Keep answers to 2-4 sentences unless more detail is needed."""
+
 
 # ============================================
-# USER CLASS
-# Flask-Login needs this to keep track of
-# who is logged in right now
+# USER
 # ============================================
 class User(UserMixin):
-    def __init__(self, id, email, username):
+    def __init__(self, id, email, username, is_admin=False):
         self.id = id
         self.email = email
         self.username = username
+        self.is_admin = is_admin
 
 
-# runs on every page load to check if someone is logged in
 @login_manager.user_loader
 def load_user(user_id):
+    if str(user_id) == 'admin':
+        return User('admin', ADMIN_EMAIL, 'Admin', is_admin=True)
     conn = get_db()
-    user = conn.execute(
-        'SELECT * FROM users WHERE id = ?', (user_id,)
-    ).fetchone()
+    user = conn.execute('SELECT * FROM users WHERE id = ?', (user_id,)).fetchone()
     conn.close()
     if user:
         return User(user['id'], user['email'], user['username'])
-    return None  # nobody logged in
+    return None
 
 
 # ============================================
-# DATABASE SETUP
-# SQLite = a simple file-based database
-# think of it like an Excel spreadsheet
-# that Python can read and write to
+# DATABASE
 # ============================================
-
-# opens the database so we can read/write
 def get_db():
     conn = sqlite3.connect(DATABASE)
-    conn.row_factory = sqlite3.Row  # lets us use row['username'] instead of row[2]
+    conn.row_factory = sqlite3.Row
     return conn
 
 
-# creates all the tables we need
-# only runs once when you first start the app
 def init_db():
     conn = get_db()
-
-    # USERS TABLE
-    # stores everyone who signs up
-    conn.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id            INTEGER PRIMARY KEY AUTOINCREMENT,
-            email         TEXT UNIQUE NOT NULL,
-            username      TEXT NOT NULL,
-            password_hash TEXT NOT NULL,
-            year          TEXT DEFAULT 'Student',
-            created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-
-    # POSTS TABLE
-    # stores every question/post on the feed
-    # sentiment = AI will tag it positive / neutral / negative
-    conn.execute('''
-        CREATE TABLE IF NOT EXISTS posts (
-            id         INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id    INTEGER,
-            content    TEXT NOT NULL,
-            category   TEXT NOT NULL,
-            anonymous  BOOLEAN NOT NULL,
-            username   TEXT,
-            upvotes    INTEGER DEFAULT 0,
-            sentiment  TEXT DEFAULT 'neutral',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-
-    # REPLIES TABLE
-    # stores all replies to posts
-    conn.execute('''
-        CREATE TABLE IF NOT EXISTS replies (
-            id         INTEGER PRIMARY KEY AUTOINCREMENT,
-            post_id    INTEGER NOT NULL,
-            user_id    INTEGER,
-            content    TEXT NOT NULL,
-            anonymous  BOOLEAN NOT NULL,
-            username   TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-
+    conn.execute('''CREATE TABLE IF NOT EXISTS users (
+        id            INTEGER PRIMARY KEY AUTOINCREMENT,
+        email         TEXT UNIQUE NOT NULL,
+        username      TEXT NOT NULL,
+        password_hash TEXT NOT NULL,
+        year          TEXT DEFAULT 'Student',
+        reset_token   TEXT,
+        created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )''')
+    conn.execute('''CREATE TABLE IF NOT EXISTS posts (
+        id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id    INTEGER,
+        content    TEXT NOT NULL,
+        category   TEXT NOT NULL,
+        anonymous  BOOLEAN NOT NULL,
+        username   TEXT,
+        upvotes    INTEGER DEFAULT 0,
+        sentiment  TEXT DEFAULT 'neutral',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )''')
+    conn.execute('''CREATE TABLE IF NOT EXISTS replies (
+        id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        post_id    INTEGER NOT NULL,
+        user_id    INTEGER,
+        content    TEXT NOT NULL,
+        anonymous  BOOLEAN NOT NULL,
+        username   TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )''')
     conn.commit()
     conn.close()
 
 
 # ============================================
 # ROUTES
-# each @app.route is a URL the app can visit
-# the frontend calls these to get/send data
 # ============================================
 
-# HOME PAGE
-# just loads the HTML file
 @app.route('/')
 def home():
+    if not current_user.is_authenticated:
+        return redirect(url_for('login_page'))
     return render_template('index.html')
 
 
-# GET ALL POSTS
-# frontend calls this to load the feed
-# returns a list of all posts newest first
+@app.route('/login')
+def login_page():
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
+    return render_template('login.html')
+
+
+@app.route('/admin')
+def admin_page():
+    return render_template('admin.html')
+
+
 @app.route('/posts')
 def get_posts():
-    conn = get_db()
-    posts = conn.execute(
-        'SELECT * FROM posts ORDER BY created_at DESC'
-    ).fetchall()
+    conn  = get_db()
+    posts = conn.execute('SELECT * FROM posts ORDER BY created_at DESC').fetchall()
     conn.close()
     return jsonify([dict(p) for p in posts])
 
 
-# GET FLAIRS
-# frontend calls this to build the category dropdown
 @app.route('/flairs')
 def get_flairs():
     return jsonify(FLAIRS)
 
 
-# SIGN UP
-# creates a new student account
 @app.route('/signup', methods=['POST'])
 def signup():
-    data = request.json         # data sent from the frontend signup form
+    data     = request.json
     email    = data.get('email', '').strip()
     username = data.get('username', '').strip()
     password = data.get('password', '')
-    year     = data.get('year', 'Student')  # Freshman / Sophomore / Junior / Senior
+    year     = data.get('year', 'Student')
 
-    # make sure no fields are empty
     if not email or not username or not password:
         return jsonify({'success': False, 'error': 'All fields required'}), 400
-
-    # NEVER store plain passwords — always scramble them first
-    password_hash = generate_password_hash(password)
 
     try:
         conn = get_db()
         conn.execute(
             'INSERT INTO users (email, username, password_hash, year) VALUES (?, ?, ?, ?)',
-            (email, username, password_hash, year)
+            (email, username, generate_password_hash(password), year)
         )
         conn.commit()
-
-        # get the user we just created so we can log them in right away
-        user_row = conn.execute(
-            'SELECT * FROM users WHERE email = ?', (email,)
-        ).fetchone()
+        row = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
         conn.close()
-
-        user = User(user_row['id'], user_row['email'], user_row['username'])
-        login_user(user)  # log them in automatically after signup
-        return jsonify({'success': True, 'username': username})
-
+        user = User(row['id'], row['email'], row['username'])
+        login_user(user)
+        return jsonify({'success': True, 'username': username, 'user_id': row['id'], 'is_admin': False})
     except sqlite3.IntegrityError:
-        # this happens if the email is already registered
         return jsonify({'success': False, 'error': 'Email already registered'}), 400
 
 
-# LOG IN
-# checks email + password then logs the user in
 @app.route('/login', methods=['POST'])
 def login():
     data     = request.json
     email    = data.get('email', '').strip()
     password = data.get('password', '')
 
-    conn     = get_db()
-    user_row = conn.execute(
-        'SELECT * FROM users WHERE email = ?', (email,)
-    ).fetchone()
+    # Admin login
+    if email == ADMIN_EMAIL and password == ADMIN_PASSWORD:
+        admin = User('admin', ADMIN_EMAIL, 'Admin', is_admin=True)
+        login_user(admin)
+        return jsonify({'success': True, 'username': 'Admin', 'user_id': 'admin', 'is_admin': True})
+
+    conn = get_db()
+    row  = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
     conn.close()
-
-    # check_password_hash compares the plain password to the scrambled one
-    if user_row and check_password_hash(user_row['password_hash'], password):
-        user = User(user_row['id'], user_row['email'], user_row['username'])
-        login_user(user)
-        return jsonify({'success': True, 'username': user_row['username']})
-
-    # wrong email or wrong password
+    if row and check_password_hash(row['password_hash'], password):
+        login_user(User(row['id'], row['email'], row['username']))
+        return jsonify({'success': True, 'username': row['username'], 'user_id': row['id'], 'is_admin': False})
     return jsonify({'success': False, 'error': 'Wrong email or password'}), 401
 
 
-# LOG OUT
 @app.route('/logout', methods=['POST'])
 def logout():
     logout_user()
     return jsonify({'success': True})
 
 
-# WHO AM I?
-# frontend calls this when the page loads
-# to check if the user is already logged in
 @app.route('/me')
 def me():
     if current_user.is_authenticated:
         return jsonify({
             'logged_in': True,
-            'username': current_user.username
+            'username': current_user.username,
+            'user_id': current_user.id,
+            'is_admin': getattr(current_user, 'is_admin', False)
         })
     return jsonify({'logged_in': False})
 
 
-# CREATE POST
-# saves a new question to the database
+# ---- FORGOT PASSWORD ----
+@app.route('/forgot-password', methods=['POST'])
+def forgot_password():
+    email = request.json.get('email', '').strip()
+    if not email.endswith('@kent.edu'):
+        return jsonify({'success': False, 'error': 'Must be a @kent.edu email'}), 400
+    conn = get_db()
+    row  = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
+    if not row:
+        conn.close()
+        return jsonify({'success': True, 'message': 'If that email is registered, a reset code was sent.'})
+    token = ''.join(secrets.choice(string.digits) for _ in range(6))
+    conn.execute('UPDATE users SET reset_token = ? WHERE email = ?', (token, email))
+    conn.commit()
+    conn.close()
+    sent = send_reset_email(email, token)
+    if sent:
+        return jsonify({'success': True, 'message': f'Reset code sent to {email}! Check your inbox.'})
+    else:
+        return jsonify({'success': True, 'message': 'Reset code sent! Check your inbox.', 'token': token})
+
+
+@app.route('/reset-password', methods=['POST'])
+def reset_password():
+    data     = request.json
+    email    = data.get('email', '').strip()
+    token    = data.get('token', '').strip()
+    password = data.get('password', '')
+    if not email or not token or not password:
+        return jsonify({'success': False, 'error': 'All fields required'}), 400
+    conn = get_db()
+    row  = conn.execute('SELECT * FROM users WHERE email = ? AND reset_token = ?', (email, token)).fetchone()
+    if not row:
+        conn.close()
+        return jsonify({'success': False, 'error': 'Invalid token or email'}), 400
+    conn.execute('UPDATE users SET password_hash = ?, reset_token = NULL WHERE email = ?',
+                 (generate_password_hash(password), email))
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True, 'message': 'Password reset! You can now log in.'})
+
+
 @app.route('/post', methods=['POST'])
 def create_post():
-    data = request.json
-
-    # if anonymous is checked, don't attach their name
+    data     = request.json
     user_id  = current_user.id if current_user.is_authenticated else None
     username = 'Anonymous' if data.get('anonymous') else (
         current_user.username if current_user.is_authenticated else 'Anonymous'
     )
-
-    # make sure the flair is valid
     category = data.get('category', 'Academic')
     if category not in FLAIRS:
         category = 'Academic'
 
+    sentiment = 'neutral'
+    answer = call_bedrock(
+        messages=[{'role': 'user', 'content':
+            f'Reply with ONE word only — positive, negative, or neutral — '
+            f'for this student post: "{data["content"][:200]}"'
+        }],
+        max_tokens=5
+    )
+    if answer:
+        w = answer.strip().lower()
+        if 'positive' in w:
+            sentiment = 'positive'
+        elif 'negative' in w:
+            sentiment = 'negative'
+
     conn = get_db()
     conn.execute(
-        '''INSERT INTO posts
-           (user_id, content, category, anonymous, username)
-           VALUES (?, ?, ?, ?, ?)''',
-        (user_id, data['content'], category, data['anonymous'], username)
+        'INSERT INTO posts (user_id,content,category,anonymous,username,sentiment) VALUES (?,?,?,?,?,?)',
+        (user_id, data['content'], category, data['anonymous'], username, sentiment)
     )
     conn.commit()
     conn.close()
     return jsonify({'success': True})
 
 
-# GET REPLIES
-# loads all replies for a specific post
+# ---- DELETE POST ----
+@app.route('/post/<int:post_id>', methods=['DELETE'])
+def delete_post(post_id):
+    if not current_user.is_authenticated:
+        return jsonify({'success': False, 'error': 'Not logged in'}), 401
+    conn = get_db()
+    post = conn.execute('SELECT * FROM posts WHERE id = ?', (post_id,)).fetchone()
+    if not post:
+        conn.close()
+        return jsonify({'success': False, 'error': 'Post not found'}), 404
+    is_admin = getattr(current_user, 'is_admin', False)
+    if str(post['user_id']) != str(current_user.id) and not is_admin:
+        conn.close()
+        return jsonify({'success': False, 'error': 'Not your post'}), 403
+    conn.execute('DELETE FROM posts WHERE id = ?', (post_id,))
+    conn.execute('DELETE FROM replies WHERE post_id = ?', (post_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True})
+
+
 @app.route('/replies/<int:post_id>')
 def get_replies(post_id):
     conn    = get_db()
     replies = conn.execute(
-        'SELECT * FROM replies WHERE post_id = ? ORDER BY created_at ASC',
-        (post_id,)
+        'SELECT * FROM replies WHERE post_id = ? ORDER BY created_at ASC', (post_id,)
     ).fetchall()
     conn.close()
     return jsonify([dict(r) for r in replies])
 
 
-# ADD REPLY
-# saves a reply to a specific post
 @app.route('/reply/<int:post_id>', methods=['POST'])
 def reply(post_id):
     data     = request.json
@@ -321,12 +462,9 @@ def reply(post_id):
     username = 'Anonymous' if data.get('anonymous') else (
         current_user.username if current_user.is_authenticated else 'Anonymous'
     )
-
     conn = get_db()
     conn.execute(
-        '''INSERT INTO replies
-           (post_id, user_id, content, anonymous, username)
-           VALUES (?, ?, ?, ?, ?)''',
+        'INSERT INTO replies (post_id,user_id,content,anonymous,username) VALUES (?,?,?,?,?)',
         (post_id, user_id, data['content'], data['anonymous'], username)
     )
     conn.commit()
@@ -334,14 +472,60 @@ def reply(post_id):
     return jsonify({'success': True})
 
 
-# UPVOTE
-# adds 1 upvote to a post when someone clicks the arrow
 @app.route('/upvote/<int:post_id>', methods=['POST'])
 def upvote(post_id):
     conn = get_db()
-    conn.execute(
-        'UPDATE posts SET upvotes = upvotes + 1 WHERE id = ?', (post_id,)
-    )
+    conn.execute('UPDATE posts SET upvotes = upvotes + 1 WHERE id = ?', (post_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True})
+
+
+# ============================================
+# ADMIN ROUTES
+# ============================================
+
+@app.route('/admin/stats')
+def admin_stats():
+    if not current_user.is_authenticated or not getattr(current_user, 'is_admin', False):
+        return jsonify({'error': 'Unauthorized'}), 403
+    conn    = get_db()
+    users   = conn.execute('SELECT COUNT(*) as c FROM users').fetchone()['c']
+    posts   = conn.execute('SELECT COUNT(*) as c FROM posts').fetchone()['c']
+    replies = conn.execute('SELECT COUNT(*) as c FROM replies').fetchone()['c']
+    pos     = conn.execute("SELECT COUNT(*) as c FROM posts WHERE sentiment='positive'").fetchone()['c']
+    neg     = conn.execute("SELECT COUNT(*) as c FROM posts WHERE sentiment='negative'").fetchone()['c']
+    conn.close()
+    return jsonify({'users': users, 'posts': posts, 'replies': replies,
+                    'positive': pos, 'negative': neg, 'neutral': posts - pos - neg})
+
+
+@app.route('/admin/users')
+def admin_users():
+    if not current_user.is_authenticated or not getattr(current_user, 'is_admin', False):
+        return jsonify({'error': 'Unauthorized'}), 403
+    conn  = get_db()
+    users = conn.execute('SELECT id, email, username, year, created_at FROM users ORDER BY created_at DESC').fetchall()
+    conn.close()
+    return jsonify([dict(u) for u in users])
+
+
+@app.route('/admin/posts')
+def admin_posts():
+    if not current_user.is_authenticated or not getattr(current_user, 'is_admin', False):
+        return jsonify({'error': 'Unauthorized'}), 403
+    conn  = get_db()
+    posts = conn.execute('SELECT * FROM posts ORDER BY created_at DESC').fetchall()
+    conn.close()
+    return jsonify([dict(p) for p in posts])
+
+
+@app.route('/admin/delete-user/<int:user_id>', methods=['DELETE'])
+def admin_delete_user(user_id):
+    if not current_user.is_authenticated or not getattr(current_user, 'is_admin', False):
+        return jsonify({'error': 'Unauthorized'}), 403
+    conn = get_db()
+    conn.execute('DELETE FROM users WHERE id = ?', (user_id,))
     conn.commit()
     conn.close()
     return jsonify({'success': True})
@@ -349,168 +533,116 @@ def upvote(post_id):
 
 # ============================================
 # AI ROUTES
-# these talk to AWS Bedrock (Claude Haiku)
-# Claude Haiku = cheapest + fastest AI model
 # ============================================
 
-# FLASHAI CHAT
-# student asks a question, AI answers using KSU knowledge
 @app.route('/ai', methods=['POST'])
 def ai_assistant():
-    data     = request.json
-    question = data.get('question', '').strip()
-
+    question = request.json.get('question', '').strip()
     if not question:
         return jsonify({'answer': 'Please ask a question!'})
-
-    # system prompt = tells the AI who it is and what it knows
-    # the more KSU info we put here, the better the answers
-    system_prompt = """You are FlashAI, the friendly AI assistant for KSUnited
-— the Q&A community platform for Kent State University students in Kent, Ohio.
-
-You know about:
-- Academics: classes, GPA, adding/dropping courses, advisors, KSU Navigate
-- Housing: dorms (Centennial Court, Tri-Towers, Verder Hall), off-campus options
-- Dining: Prentice Cafe, The Hub, Side by Side — hours and meal plans
-- Health: DeWeese Health Center (Eastway Drive), CARES Center, counseling
-- Tech Help: KSU TechHelp 330-672-HELP (24/7), Canvas, FlashLine
-- Career: Career Exploration and Development office, co-ops, internships
-- International students: ISO office, visa questions
-- Accessibility: Student Accessibility Services (SAS)
-- Tutoring: Academic Success Center
-
-Keep answers short, friendly, and helpful.
-If you don't know something specific, say so and point them to kent.edu."""
-
-    try:
-        # build the message to send to AWS Bedrock
-        body = json.dumps({
-            "anthropic_version": "bedrock-2023-05-31",
-            "max_tokens": 512,
-            "system": system_prompt,
-            "messages": [{"role": "user", "content": question}]
-        })
-
-        # send it to Claude Haiku on AWS Bedrock
-        response = bedrock.invoke_model(
-            body=body,
-            modelId="anthropic.claude-3-haiku-20240307-v1:0",
-            accept="application/json",
-            contentType="application/json"
-        )
-
-        # read the response and send it back to the frontend
-        result = json.loads(response.get("body").read())
-        return jsonify({'answer': result["content"][0]["text"]})
-
-    except Exception as e:
-        # if AWS isn't set up yet, show a friendly message instead of crashing
-        print(f"Bedrock error: {e}")
-        return jsonify({'answer': 'FlashAI is offline right now. Try again soon!'})
+    print(f'FlashAI question: {question}')
+    answer = call_bedrock(
+        messages=[{'role': 'user', 'content': question}],
+        system_prompt=KSU_SYSTEM_PROMPT,
+        max_tokens=512
+    )
+    print(f'FlashAI answer: {answer}')
+    if answer:
+        return jsonify({'answer': answer})
+    return jsonify({'answer': 'FlashAI is offline right now. Try again soon!'})
 
 
-# SUMMARIZE POST (TL;DR button)
-# student clicks "summarize" on a long post
-# AI gives a 1-2 sentence summary
 @app.route('/summarize/<int:post_id>', methods=['POST'])
 def summarize(post_id):
     conn = get_db()
-    post = conn.execute(
-        'SELECT content FROM posts WHERE id = ?', (post_id,)
-    ).fetchone()
+    post = conn.execute('SELECT content FROM posts WHERE id = ?', (post_id,)).fetchone()
     conn.close()
-
     if not post:
         return jsonify({'summary': 'Post not found'})
-
-    try:
-        body = json.dumps({
-            "anthropic_version": "bedrock-2023-05-31",
-            "max_tokens": 100,
-            "messages": [{
-                "role": "user",
-                "content": f"Summarize this KSU student post in 1-2 sentences max: {post['content']}"
-            }]
-        })
-        response = bedrock.invoke_model(
-            body=body,
-            modelId="anthropic.claude-3-haiku-20240307-v1:0",
-            accept="application/json",
-            contentType="application/json"
-        )
-        result = json.loads(response.get("body").read())
-        return jsonify({'summary': result["content"][0]["text"]})
-
-    except Exception as e:
-        return jsonify({'summary': 'Could not summarize right now.'})
+    answer = call_bedrock(
+        messages=[{'role': 'user', 'content':
+            f'Summarize this KSU student post in 1-2 sentences: "{post["content"]}"'
+        }],
+        max_tokens=100
+    )
+    if answer:
+        return jsonify({'summary': answer})
+    return jsonify({'summary': 'Could not summarize right now.'})
 
 
-# DUPLICATE CHECKER
-# before a student posts, we check if a similar question already exists
-# sends the new question + existing post titles to AI
-# AI says yes or no if it's a duplicate
 @app.route('/check-duplicate', methods=['POST'])
 def check_duplicate():
-    data         = request.json
-    new_question = data.get('content', '').strip()
-
-    if not new_question:
+    new_q = request.json.get('content', '').strip()
+    if not new_q:
         return jsonify({'is_duplicate': False})
-
-    # get the last 20 post titles to compare against
     conn  = get_db()
-    posts = conn.execute(
-        'SELECT content FROM posts ORDER BY created_at DESC LIMIT 20'
-    ).fetchall()
+    posts = conn.execute('SELECT content FROM posts ORDER BY created_at DESC LIMIT 20').fetchall()
     conn.close()
-
     if not posts:
         return jsonify({'is_duplicate': False, 'similar': None})
-
-    # build a list of existing posts to send to AI
-    existing = '\n'.join([f"- {p['content'][:100]}" for p in posts])
-
-    try:
-        body = json.dumps({
-            "anthropic_version": "bedrock-2023-05-31",
-            "max_tokens": 150,
-            "messages": [{
-                "role": "user",
-                "content": f"""New question: "{new_question}"
-
-Existing questions:
-{existing}
-
-Is the new question very similar to any existing one? 
-Reply with JSON only: {{"is_duplicate": true/false, "similar": "the similar question or null"}}"""
-            }]
-        })
-        response = bedrock.invoke_model(
-            body=body,
-            modelId="anthropic.claude-3-haiku-20240307-v1:0",
-            accept="application/json",
-            contentType="application/json"
-        )
-        result  = json.loads(response.get("body").read())
-        text    = result["content"][0]["text"].strip()
-
-        # try to parse the AI's JSON response
+    existing = '\n'.join([f'- {p["content"][:100]}' for p in posts])
+    answer = call_bedrock(
+        messages=[{'role': 'user', 'content':
+            f'New question: "{new_q}"\n\nExisting:\n{existing}\n\n'
+            f'Is it very similar to any existing one? '
+            f'Reply with JSON only: {{"is_duplicate": true/false, "similar": "matching question or null"}}'
+        }],
+        max_tokens=150
+    )
+    if answer:
         try:
-            parsed = json.loads(text)
-            return jsonify(parsed)
-        except:
-            return jsonify({'is_duplicate': False, 'similar': None})
+            clean = answer.strip().replace('```json', '').replace('```', '').strip()
+            return jsonify(json.loads(clean))
+        except Exception:
+            pass
+    return jsonify({'is_duplicate': False, 'similar': None})
 
-    except Exception as e:
-        # if AI is offline just let them post anyway
-        return jsonify({'is_duplicate': False, 'similar': None})
 
 
 # ============================================
-# START THE APP
-# runs when you type: python app.py
+# FLASH SCORE LEADERBOARD
+# Formula: (upvotes_received x 3) + (post_count x 2) + (reply_count x 1) + sentiment_bonus
+# Sentiment bonus: +10 if >60% positive posts, -5 if >60% negative
+# Normalized 0-100 via min-max normalization
+# ============================================
+
+@app.route('/leaderboard')
+def leaderboard():
+    conn = get_db()
+    users = conn.execute('''
+        SELECT DISTINCT username, user_id FROM posts
+        WHERE anonymous=0 AND user_id IS NOT NULL AND username != 'Anonymous'
+    ''').fetchall()
+
+    scores = []
+    for u in users:
+        uid, username = u['user_id'], u['username']
+        pd = conn.execute('''
+            SELECT COUNT(*) as pc, COALESCE(SUM(upvotes),0) as uv,
+                   SUM(CASE WHEN sentiment='positive' THEN 1 ELSE 0 END) as pos,
+                   SUM(CASE WHEN sentiment='negative' THEN 1 ELSE 0 END) as neg
+            FROM posts WHERE user_id=? AND anonymous=0
+        ''', (uid,)).fetchone()
+        rc = conn.execute('SELECT COUNT(*) as c FROM replies WHERE user_id=? AND anonymous=0', (uid,)).fetchone()['c']
+        pc, uv, pos, neg = pd['pc'], pd['uv'], pd['pos'] or 0, pd['neg'] or 0
+        sb = 0
+        if pc > 0:
+            if pos/pc > 0.6: sb = 10
+            elif neg/pc > 0.6: sb = -5
+        raw = (uv*3) + (pc*2) + (rc*1) + sb
+        scores.append({'username':username,'raw_score':raw,'post_count':pc,'total_upvotes':uv,'reply_count':rc,'sentiment_bonus':sb})
+    conn.close()
+    if not scores: return jsonify([])
+    vals = [s['raw_score'] for s in scores]
+    mn, mx = min(vals), max(vals)
+    for s in scores:
+        s['flash_score'] = round((s['raw_score']-mn)/(mx-mn)*100,1) if mx!=mn else (100 if mx>0 else 0)
+    scores.sort(key=lambda x: x['flash_score'], reverse=True)
+    return jsonify(scores[:10])
+
+# ============================================
+# START
 # ============================================
 if __name__ == '__main__':
-    init_db()            # set up the database tables
-    app.run(debug=True)  # debug=True shows errors in browser
-                         # IMPORTANT: turn debug off before going live!
+    init_db()
+    app.run(debug=False)

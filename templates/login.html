@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>KsUnited ⚡ — Sign In</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Lora:ital,wght@1,400;1,600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold: #EAB020;
+      --gold-lt: #F5C842;
+      --navy: #002664;
+      --r: 10px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      background: #07101e;
+      color: #eef2f8;
+      font-family: 'DM Sans', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    /* ══════════════════════════════
+       LEFT — VERTICAL SLIDESHOW
+    ══════════════════════════════ */
+    .slide-col {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      background: #020c18;
+    }
+
+    /* Right fade to match auth panel */
+    .slide-col::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to right,
+        transparent 55%,
+        rgba(7,16,30,.6) 80%,
+        #07101e 100%
+      );
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    /* Top and bottom fades */
+    .slide-col::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(to bottom, rgba(7,16,30,.6) 0%, transparent 12%, transparent 88%, rgba(7,16,30,.8) 100%);
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    /* Scrolling track — seamless loop by duplicating slides */
+    .slide-track {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 8px 0;
+      animation: scrollUp 40s linear infinite;
+    }
+    .slide-track:hover { animation-play-state: paused; }
+
+    @keyframes scrollUp {
+      0%   { transform: translateY(0); }
+      100% { transform: translateY(-50%); }
+    }
+
+    .slide-img[style*="display: none"] { display: none !important; }
+    .slide-img {
+      width: 100%;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+      flex-shrink: 0;
+      border-radius: 6px;
+    }
+
+    /* Branding on top of slideshow */
+    .slide-brand {
+      position: absolute;
+      top: 2rem;
+      left: 2rem;
+      z-index: 10;
+    }
+    .slide-brand-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      font-weight: 900;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      gap: .2rem;
+      text-shadow: 0 2px 12px rgba(0,0,0,.5);
+    }
+    .slide-brand-name .ks  { color: #fff; }
+    .slide-brand-name .un  { color: var(--gold); }
+    .slide-brand-sub {
+      font-family: 'DM Mono', monospace;
+      font-size: .56rem;
+      color: rgba(255,255,255,.45);
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      margin-top: .25rem;
+    }
+
+    /* Quote at bottom */
+    .slide-bottom {
+      position: absolute;
+      bottom: 2.2rem;
+      left: 2rem;
+      right: 2.5rem;
+      z-index: 10;
+    }
+    .slide-quote {
+      font-family: 'Lora', serif;
+      font-style: italic;
+      font-size: 1rem;
+      color: rgba(255,255,255,.75);
+      line-height: 1.55;
+      max-width: 300px;
+      transition: opacity .5s;
+    }
+
+
+    /* ══════════════════════════════
+       RIGHT — AUTH PANEL
+    ══════════════════════════════ */
+    .auth-col {
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      background: transparent;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      position: relative;
+    }
+    .auth-col::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 40% at 50% 0%, rgba(0,38,100,.28) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 25% at 50% 100%, rgba(234,176,32,.05) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .auth-inner {
+      position: relative;
+      z-index: 1;
+      padding: 2.8rem 2.2rem 2rem;
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
+      justify-content: center;
+      gap: 0;
+    }
+
+    .gold-bar {
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      margin-bottom: 2.4rem;
+      flex-shrink: 0;
+    }
+
+    .auth-hello {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: .3rem;
+    }
+    .auth-hello span { color: var(--gold); }
+
+    .auth-sub {
+      font-family: 'DM Mono', monospace;
+      font-size: .57rem;
+      color: rgba(238,242,248,.28);
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      margin-bottom: 2rem;
+    }
+
+    /* Tabs */
+    .tab-row {
+      display: flex;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(234,176,32,.1);
+      border-radius: var(--r);
+      padding: 3px;
+      margin-bottom: 1.6rem;
+      gap: 3px;
+    }
+    .tab {
+      flex: 1;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .8rem;
+      font-weight: 600;
+      padding: .42rem;
+      border-radius: 7px;
+      border: none;
+      background: none;
+      color: rgba(238,242,248,.35);
+      cursor: pointer;
+      transition: all .18s;
+      text-align: center;
+    }
+    .tab.on {
+      background: var(--gold);
+      color: #07101e;
+      box-shadow: 0 2px 10px rgba(234,176,32,.3);
+    }
+
+    /* Forms */
+    .form { display: none; flex-direction: column; gap: .85rem; }
+    .form.on { display: flex; }
+
+    .fg { display: flex; flex-direction: column; gap: .26rem; }
+    .fl {
+      font-family: 'DM Mono', monospace;
+      font-size: .57rem;
+      color: rgba(238,242,248,.32);
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    .fi, .fsel {
+      width: 100%;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(234,176,32,.12);
+      border-radius: var(--r);
+      color: #eef2f8;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .87rem;
+      padding: .54rem .82rem;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .fi:focus, .fsel:focus {
+      border-color: rgba(234,176,32,.45);
+      box-shadow: 0 0 0 3px rgba(234,176,32,.08);
+    }
+    .fi::placeholder { color: rgba(238,242,248,.18); }
+    .fsel { appearance: none; cursor: pointer; }
+    .fsel option { background: #0a1020; }
+
+    .btn-main {
+      width: 100%;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .88rem;
+      font-weight: 700;
+      padding: .58rem;
+      border-radius: var(--r);
+      border: none;
+      background: var(--gold);
+      color: #07101e;
+      cursor: pointer;
+      transition: all .15s;
+      margin-top: .1rem;
+    }
+    .btn-main:hover {
+      background: var(--gold-lt);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(234,176,32,.35);
+    }
+    .btn-main.loading { opacity: .65; pointer-events: none; }
+
+    .btn-ghost {
+      width: 100%;
+      font-family: 'DM Sans', sans-serif;
+      font-size: .82rem;
+      font-weight: 500;
+      padding: .5rem;
+      border-radius: var(--r);
+      border: 1px solid rgba(234,176,32,.14);
+      background: none;
+      color: rgba(238,242,248,.45);
+      cursor: pointer;
+      transition: all .15s;
+      text-align: center;
+    }
+    .btn-ghost:hover { border-color: rgba(234,176,32,.35); color: #eef2f8; }
+
+    .divider {
+      display: flex; align-items: center; gap: .6rem;
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1; height: 1px;
+      background: rgba(234,176,32,.1);
+    }
+    .divider span {
+      font-family: 'DM Mono', monospace;
+      font-size: .56rem;
+      color: rgba(238,242,248,.22);
+      letter-spacing: .1em;
+    }
+
+    .forgot-btn {
+      background: none; border: none;
+      font-family: 'DM Mono', monospace;
+      font-size: .6rem;
+      color: rgba(234,176,32,.55);
+      cursor: pointer; padding: 0;
+      text-align: right; align-self: flex-end;
+      transition: color .12s;
+      text-decoration: underline;
+      text-decoration-color: rgba(234,176,32,.2);
+      margin-top: -.4rem;
+    }
+    .forgot-btn:hover { color: var(--gold); }
+
+    .err-msg {
+      font-family: 'DM Mono', monospace; font-size: .62rem;
+      color: #e8464a; background: rgba(232,70,74,.08);
+      border: 1px solid rgba(232,70,74,.18);
+      border-radius: 6px; padding: .34rem .6rem; display: none;
+    }
+    .ok-msg {
+      font-family: 'DM Mono', monospace; font-size: .62rem;
+      color: #27c97a; background: rgba(39,201,122,.08);
+      border: 1px solid rgba(39,201,122,.18);
+      border-radius: 6px; padding: .34rem .6rem; display: none;
+    }
+
+    .auth-footer {
+      margin-top: 1.8rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(234,176,32,.07);
+      font-family: 'DM Mono', monospace;
+      font-size: .54rem;
+      color: rgba(238,242,248,.18);
+      letter-spacing: .1em;
+      text-align: center;
+    }
+    .auth-footer span { color: rgba(234,176,32,.45); }
+
+    @media (max-width: 680px) {
+      .slide-col { display: none; }
+      .auth-col { width: 100%; border: none; }
+    }
+  </style>
+</head>
+<body>
+<div style="position:fixed;inset:0;z-index:0;background:url(/static/homecoming2.jpg) center/cover no-repeat;filter:brightness(.25) saturate(.8)"></div>
+<div style="position:fixed;inset:0;z-index:1;background:radial-gradient(ellipse 100% 55% at 50% 0%,rgba(0,38,100,.4) 0%,transparent 68%)"></div>
+
+  <div class="slide-track">
+    <!-- First set -->
+    <img class="slide-img" onerror="this.style.display='none'" src="/static/campus.jpg"     alt="KSU Campus"/>
+    <img class="slide-img" onerror="this.style.display='none'" src="/static/campus2.jpg"    alt="KSU Campus"/>
+    <img class="slide-img" onerror="this.style.display='none'" src="/static/campus2.jpg"    alt="KSU Campus"/>
+    <img class="slide-img" onerror="this.style.display='none'" src="/static/dining.jpg"     alt="KSU Dining"/>
+    <img class="slide-img" onerror="this.style.display='none'" src="/static/dining2.jpg"    alt="KSU Dining"/>
+    <img class="slide-img" onerror="this.style.display='none'" src="/static/homecoming2.jpg" alt="KSU Homecoming"/>
+    <!-- Duplicate set for seamless infinite loop -->
+    <img class="slide-img" onerror="this.style.display='none'" src="/static/campus.jpg"     alt="KSU Campus"/>
+    <img class="slide-img" onerror="this.style.display='none'" src="/static/campus2.jpg"    alt="KSU Campus"/>
+    <img class="slide-img" onerror="this.style.display='none'" src="/static/campus2.jpg"    alt="KSU Campus"/>
+    <img class="slide-img" onerror="this.style.display='none'" src="/static/dining.jpg"     alt="KSU Dining"/>
+    <img class="slide-img" onerror="this.style.display='none'" src="/static/dining2.jpg"    alt="KSU Dining"/>
+    <img class="slide-img" onerror="this.style.display='none'" src="/static/homecoming2.jpg" alt="KSU Homecoming"/>
+  </div>
+
+  <div class="slide-bottom">
+    <div class="slide-quote" id="sq">"The community here made KSU feel like home from day one."</div>
+
+  </div>
+</div>
+
+<!-- ════════ RIGHT: AUTH ════════ -->
+<div class="auth-col">
+  <div class="auth-inner">
+    <div class="gold-bar"></div>
+
+    <div class="auth-hello">Welcome back,<br><span>Flash</span> ⚡</div>
+    <div class="auth-sub">Kent State University · Student Portal</div>
+
+    <div class="tab-row">
+      <button class="tab on" id="tab-li" onclick="switchTab('li')">Log In</button>
+      <button class="tab"    id="tab-su" onclick="switchTab('su')">Sign Up</button>
+    </div>
+
+    <!-- LOGIN -->
+    <div class="form on" id="form-li">
+      <div class="fg">
+        <label class="fl">Email</label>
+        <input class="fi" id="le" type="email" placeholder="you@kent.edu" autocomplete="email"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Password</label>
+        <input class="fi" id="lp" type="password" placeholder="••••••••" autocomplete="current-password"/>
+      </div>
+      <button class="forgot-btn" onclick="switchTab('fp')">Forgot password?</button>
+      <div class="err-msg" id="le-e"></div>
+      <button class="btn-main" id="li-btn" onclick="doLogin()">Log In</button>
+      <div class="divider"><span>or</span></div>
+      <button class="btn-ghost" onclick="switchTab('su')">Create an account</button>
+    </div>
+
+    <!-- SIGN UP -->
+    <div class="form" id="form-su">
+      <div class="fg">
+        <label class="fl">KSU Email</label>
+        <input class="fi" id="se" type="email" placeholder="you@kent.edu" autocomplete="email"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Display Name</label>
+        <input class="fi" id="sn" placeholder="FlashFan42" autocomplete="username"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Password</label>
+        <input class="fi" id="sp" type="password" placeholder="••••••••" autocomplete="new-password"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Year</label>
+        <select class="fsel" id="sy">
+          <option>Freshman</option><option>Sophomore</option>
+          <option>Junior</option><option>Senior</option><option>Graduate</option>
+        </select>
+      </div>
+      <div class="err-msg" id="se-e"></div>
+      <button class="btn-main" id="su-btn" onclick="doSignup()">Create Account</button>
+      <div class="divider"><span>or</span></div>
+      <button class="btn-ghost" onclick="switchTab('li')">Already have an account</button>
+    </div>
+
+    <!-- FORGOT PASSWORD -->
+    <div class="form" id="form-fp">
+      <div style="font-family:'DM Mono',monospace;font-size:.62rem;color:rgba(238,242,248,.4);margin-bottom:.5rem">Enter your @kent.edu email — we'll send a 6-digit code.</div>
+      <div class="fg">
+        <label class="fl">KSU Email</label>
+        <input class="fi" id="fpe" type="email" placeholder="you@kent.edu"/>
+      </div>
+      <div class="err-msg" id="fp-e"></div>
+      <div class="ok-msg"  id="fp-ok"></div>
+      <button class="btn-main" onclick="doForgot()">Send Reset Code</button>
+      <div class="divider"><span>enter code from email</span></div>
+      <div class="fg">
+        <label class="fl">6-Digit Code</label>
+        <input class="fi" id="fpt" placeholder="123456" maxlength="6" style="letter-spacing:.3em;font-size:1.1rem;text-align:center"/>
+      </div>
+      <div class="fg">
+        <label class="fl">New Password</label>
+        <input class="fi" id="fpp" type="password" placeholder="new password"/>
+      </div>
+      <div class="err-msg" id="rp-e"></div>
+      <div class="ok-msg"  id="rp-ok"></div>
+      <button class="btn-main" onclick="doReset()">Set New Password</button>
+      <div class="divider"><span></span></div>
+      <button class="btn-ghost" onclick="switchTab('li')">← Back to Log In</button>
+    </div>
+
+    <div class="auth-footer">
+      <span>KsUnited ⚡</span> · By Flashes, For Flashes · Kent State University
+    </div>
+  </div>
+</div>
+
+<script>
+function switchTab(t) {
+  ['li','su','fp'].forEach(id => {
+    const tab  = document.getElementById('tab-'+id);
+    const form = document.getElementById('form-'+id);
+    if(tab)  tab.classList.toggle('on', id===t);
+    if(form) form.classList.toggle('on', id===t);
+  });
+  ['le-e','se-e','fp-e','fp-ok','rp-e','rp-ok'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.style.display='none';
+  });
+}
+
+function showErr(id, msg) { const e=document.getElementById(id); e.textContent=msg; e.style.display='block'; }
+function showOk(id, msg)  { const e=document.getElementById(id); e.textContent=msg; e.style.display='block'; }
+function setLoad(id, on)  { document.getElementById(id)?.classList.toggle('loading', on); }
+
+async function doLogin() {
+  document.getElementById('le-e').style.display='none';
+  setLoad('li-btn', true);
+  try {
+    const r = await fetch('/login', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({email: document.getElementById('le').value.trim(), password: document.getElementById('lp').value})
+    });
+    const d = await r.json();
+    if(d.success) { window.location.href='/'; }
+    else { showErr('le-e', d.error||'Wrong email or password'); setLoad('li-btn', false); }
+  } catch(e) { showErr('le-e','Something went wrong'); setLoad('li-btn', false); }
+}
+
+async function doSignup() {
+  document.getElementById('se-e').style.display='none';
+  setLoad('su-btn', true);
+  try {
+    const r = await fetch('/signup', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        email: document.getElementById('se').value.trim(),
+        username: document.getElementById('sn').value.trim(),
+        password: document.getElementById('sp').value,
+        year: document.getElementById('sy').value
+      })
+    });
+    const d = await r.json();
+    if(d.success) { window.location.href='/'; }
+    else { showErr('se-e', d.error||'Sign up failed'); setLoad('su-btn', false); }
+  } catch(e) { showErr('se-e','Something went wrong'); setLoad('su-btn', false); }
+}
+
+async function doForgot() {
+  document.getElementById('fp-ok').style.display='none';
+  document.getElementById('fp-e').style.display='none';
+  const email = document.getElementById('fpe').value.trim();
+  if(!email) { showErr('fp-e','Enter your email'); return; }
+  try {
+    const r = await fetch('/forgot-password', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email})});
+    const d = await r.json();
+    if(d.token) {
+      showOk('fp-ok', `Your token: ${d.token} — copy it, enter below`);
+      document.getElementById('fpt').value = d.token;
+    } else { showOk('fp-ok', d.message||'Check your email'); }
+  } catch(e) { showErr('fp-e','Something went wrong'); }
+}
+
+async function doReset() {
+  document.getElementById('rp-ok').style.display='none';
+  document.getElementById('rp-e').style.display='none';
+  const email=document.getElementById('fpe').value.trim(), token=document.getElementById('fpt').value.trim(), password=document.getElementById('fpp').value;
+  if(!email||!token||!password) { showErr('rp-e','Fill all fields'); return; }
+  try {
+    const r = await fetch('/reset-password', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email,token,password})});
+    const d = await r.json();
+    if(d.success) { showOk('rp-ok','Password reset! Go back to log in.'); setTimeout(()=>switchTab('li'), 1800); }
+    else showErr('rp-e', d.error||'Invalid token');
+  } catch(e) { showErr('rp-e','Something went wrong'); }
+}
+
+// Enter key support
+document.addEventListener('keydown', e => {
+  if(e.key!=='Enter') return;
+  const f = document.querySelector('.form.on');
+  if(!f) return;
+  if(f.id==='form-li') doLogin();
+  else if(f.id==='form-su') doSignup();
+});
+
+// Rotating quotes
+const quotes = [
+  '"The community here made KSU feel like home from day one."',
+  '"FlashAI helped me figure out advising in minutes."',
+  '"Found my study group through KsUnited in the first week."',
+  '"Best place to ask questions without feeling judged."',
+  '"Eastway is amazing — KsUnited told me the best times to go."',
+];
+let qi=0;
+setInterval(() => {
+  const el = document.getElementById('sq');
+  el.style.opacity='0';
+  setTimeout(() => { qi=(qi+1)%quotes.length; el.textContent=quotes[qi]; el.style.opacity='1'; }, 500);
+}, 6000);
+
+// Redirect if already logged in
+(async () => {
+  try { const r=await fetch('/me'); const d=await r.json(); if(d.logged_in) window.location.href='/'; } catch(e) {}
+})();
+</script>
+</body>
+</html>
